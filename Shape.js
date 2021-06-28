@@ -4,6 +4,8 @@ class Shape {
     this.verticesArray.push(startVertex);
     this.path = new g.Path();
     this.path.moveTo(startVertex.x, startVertex.y);
+    this.clickedX = 0;
+    this.clickedY = 0;
   }
   
   addNewVertex(newVertex) {
@@ -11,16 +13,27 @@ class Shape {
     this.path.lineTo(newVertex.x, newVertex.y);
   }
   
-  drawShape(fillColour, drawingContext) {
+  closeShape() {
     this.path.closePath();
+  }
+  
+  drawShape(fillColour) {
     this.path.fill = fillColour;
     this.path.draw(drawingContext);
   }
 
+  translateShape(X,Y) {
+    this.path = g.translate(this.path, {x: X, y: Y});
+  }
+
+  translateShapeFromClicked(X, Y) {
+    this.path = g.translate(this.path, {x: X-this.clickedX, y: Y-this.clickedY});
+    this.clickedX = X;
+    this.clickedY = Y;
+  }
+
   containsPoint(x, y) {
-    console.log(this.path.contains(x,y));
+    return this.path.contains(x,y);
   }
   
 }
-
-//module.exports = Shape;

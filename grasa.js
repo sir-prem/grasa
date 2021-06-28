@@ -1,68 +1,47 @@
-var pathA, pathB, pathE, r;
-
-var shapeA;
-
 function setup() {
-  createCanvas(1300, 450);
-  background(220);
- /* 
-  pathA = new g.Path();
+  createCanvas(800, 600);
   
-  pathA.moveTo(20, 20);
-  pathA.lineTo(80, 20);
-  pathA.lineTo(100, 80);
-  pathA.lineTo(60, 80);
-  pathA.lineTo(40, 120);
-  pathA.closePath();
-  pathA.fill = 'yellow';
-  //pathA.draw(drawingContext);
-  */
   shapeA = new Shape({ x: 300, y: 300 });
   shapeA.addNewVertex({ x: 360, y: 300 });
   shapeA.addNewVertex({ x: 400, y: 420 });
   shapeA.addNewVertex({ x: 270, y: 420 });
-  shapeA.drawShape('yellow', drawingContext);
+  shapeA.closeShape();
   
-  
-  
-/*
-  pathB = new g.Path();
-  pathB.moveTo(40, 40);
-  pathB.lineTo(100, 40);
-  pathB.lineTo(140, 60);
-  pathB.lineTo(10, 60);
-  pathB.closePath();
-  pathB.fill = 'orange';
-  
-  r = g.rect({x: 100, y: 100}, 50, 50);
-  */
+  shapeB = new Shape({ x: 200, y: 300 });
+  shapeB.addNewVertex({ x: 335, y: 250 });
+  shapeB.addNewVertex({ x: 320, y: 375 });
+  shapeB.addNewVertex({ x: 250, y: 350 });
+  shapeB.closeShape();
 }
 
+function draw() {  
+  background(220);
 
-function draw() {
-  shapeA.containsPoint(mouseX,mouseY);
-  /*
-  pathA.draw(drawingContext);
-  r.draw(drawingContext);
-  
-  
-  pathB.draw(drawingContext);
-  
-  pathE = g.compound(pathA, pathB, 'intersection');
-  pathE.fill = 'white';
-  pathE.stroke = 'black';
-  pathE.draw(drawingContext);
-  
-  */
-  
+  if (shapeA.containsPoint(mouseX,mouseY)) {
+      shapeA.drawShape('red');    
+  }
+  else {
+      shapeA.drawShape('yellow');
+  }
+  shapeB.drawShape('orange');
+  intersectShape = new IntersectionShape(shapeA, shapeB);
+  intersectShape.drawShape('white','black'); 
+
+  textSize(14);
+  fill(0, 180, 180);
+  text(`(${mouseX},${mouseY})`, mouseX+10, mouseY+20);
 }
 
 function mousePressed() {
-  /*
-    clear();
-    background(220);
-    console.log("mouse is pressed");
-    pathA = g.translate(pathA, {x: 2, y: 2});
-    r = g.translate(r, {x: 4, y: 4});
-    */
+  if (shapeA.containsPoint(mouseX,mouseY)) {
+    shapeA.clickedX = mouseX;
+    shapeA.clickedY = mouseY;
   }
+}
+
+function mouseDragged() {
+  if (shapeA.containsPoint(mouseX,mouseY)) {
+    shapeA.translateShapeFromClicked(mouseX,mouseY);
+  }
+}
+
