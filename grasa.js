@@ -1,5 +1,20 @@
+
 function setup() {
   createCanvas(800, 600);
+  colorMode(HSB, 100);
+  _RED = `hsl(0, 100%, 65%)`;
+  _ORANGE = `hsl(30, 80%, 60%)`;
+  _YELLOW = `hsl(60, 85%, 50%)`;
+  _GREEN = `hsl(120, 60%, 50%)`;
+  _TEAL = `hsl(165, 100%, 40%)`;
+  _BLUE = `hsl(204, 100%, 50%)`;
+  _PURPLE = `hsl(280, 100%, 70%)`;
+  _SLATE = `hsl(240, 20%, 50%)`;
+  _WHITE = `hsl(0, 0%, 100%)`;
+  _DARKGREY = `hsl(0, 0%, 25%)`;
+  _IVORY = `hsl(60, 30%, 95%)`;
+
+  color
   
   shapeA = new Shape({ x: 300, y: 300 });
   shapeA.addNewVertex({ x: 360, y: 300 });
@@ -15,21 +30,27 @@ function setup() {
 }
 
 function draw() {  
-  background(220);
+  background(60,30,60);
 
   if (shapeA.containsPoint(mouseX,mouseY)) {
-      shapeA.drawShape('red');    
+      shapeA.drawShape(_PURPLE);    
   }
   else {
-      shapeA.drawShape('yellow');
+      shapeA.drawShape(_YELLOW);
   }
-  shapeB.drawShape('orange');
+  shapeB.drawShape(_BLUE);
   intersectShape = new IntersectionShape(shapeA, shapeB);
-  intersectShape.drawShape('white','black'); 
+  intersectShape.drawShape(_IVORY,_DARKGREY); 
 
   textSize(14);
-  fill(0, 180, 180);
+  fill(0, 80, 100);
   text(`(${mouseX},${mouseY})`, mouseX+10, mouseY+20);
+  textSize(18);
+  fill(0, 0, 100);
+  text(`grasa v1.0`, width-135, 30);
+  textSize(10);
+  text(`An abstract shape`, width-135, 45);
+  text(`ideation tool`, width-135, 55);
 }
 
 function mousePressed() {
