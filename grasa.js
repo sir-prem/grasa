@@ -13,6 +13,7 @@ function setup() {
   _WHITE = `hsl(0, 0%, 100%)`;
   _DARKGREY = `hsl(0, 0%, 25%)`;
   _IVORY = `hsl(60, 30%, 95%)`;
+  _NONE = `hsla(0, 0%, 0%, 0.0)`;
 
   color
   
@@ -41,9 +42,15 @@ function draw() {
   shapeB.drawShape(_BLUE);
   intersectShape = new IntersectionShape(shapeA, shapeB);
   intersectShape.drawShape(_IVORY,_DARKGREY); 
+  
+  if (shapeA.containsPoint(mouseX,mouseY)) { 
+    shapeA.drawVertexEllipses(_NONE, _RED);   
+    shapeA.mouseOnVertex(mouseX,mouseY);
+  }
+
 
   textSize(14);
-  fill(0, 80, 100);
+  fill(0, 0, 90);
   text(`(${mouseX},${mouseY})`, mouseX+10, mouseY+20);
   textSize(18);
   fill(0, 0, 100);
@@ -62,7 +69,7 @@ function mousePressed() {
 
 function mouseDragged() {
   if (shapeA.containsPoint(mouseX,mouseY)) {
-    shapeA.translateShapeFromClicked(mouseX,mouseY);
+    shapeA.translateShapeFromClickedPoint(mouseX,mouseY);
   }
 }
 
