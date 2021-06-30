@@ -14,8 +14,6 @@ function setup() {
   _DARKGREY = `hsl(0, 0%, 25%)`;
   _IVORY = `hsl(60, 30%, 95%)`;
   _NONE = `hsla(0, 0%, 0%, 0.0)`;
-
-  color
   
   shapeA = new Shape({ x: 300, y: 300 });
   shapeA.addNewVertex({ x: 360, y: 300 });
@@ -33,7 +31,7 @@ function setup() {
 function draw() {  
   background(60,30,60);
 
-  if (shapeA.containsPoint(mouseX,mouseY)) {
+  if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) {
       shapeA.drawShape(_PURPLE);    
   }
   else {
@@ -43,9 +41,8 @@ function draw() {
   intersectShape = new IntersectionShape(shapeA, shapeB);
   intersectShape.drawShape(_IVORY,_DARKGREY); 
   
-  if (shapeA.containsPoint(mouseX,mouseY)) { 
+  if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) { 
     shapeA.drawVertexEllipses(_NONE, _RED);   
-    shapeA.mouseOnVertex(mouseX,mouseY);
   }
 
 
@@ -68,8 +65,13 @@ function mousePressed() {
 }
 
 function mouseDragged() {
-  if (shapeA.containsPoint(mouseX,mouseY)) {
-    shapeA.translateShapeFromClickedPoint(mouseX,mouseY);
+  if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) {  
+    if (shapeA.mouseOnVertex(mouseX,mouseY).bool) {
+      shapeA.moveVertex(mouseX,mouseY, shapeA.mouseOnVertex(mouseX,mouseY).index);
+      shapeA.rebuildShape();
+    }
+    else {
+      shapeA.translateShapeFromClickedPoint(mouseX,mouseY);
+    }
   }
 }
-

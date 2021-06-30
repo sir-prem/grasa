@@ -1,7 +1,8 @@
 class Shape {
+
   constructor(startVertex) {
     this.verticesArray = [];
-    this.ellipsesArray = [];
+    this.ellipsesArray;
     this.verticesArray.push(startVertex);
     this.path = new g.Path();
     this.path.moveTo(startVertex.x, startVertex.y);
@@ -16,30 +17,29 @@ class Shape {
   
   closeShape() {
     this.path.closePath();
-
-    console.log(`vertices are: `);
-    for (let i = 0; i < this.verticesArray.length; i++) {
-      console.log(`(${this.verticesArray[i].x}, ${this.verticesArray[i].y})`);
-    }
-
     this.initialiseEllipsesArray();
   }
   
   drawShape(fillColour) {
     this.path.fill = fillColour;
     this.path.draw(drawingContext);
-    
-    
   }
 
   initialiseEllipsesArray() {
-    console.log(`length of ellipsesArray BEFORE: ${this.ellipsesArray.length}`);
+    this.ellipsesArray = [];
+    
+    let ellipseWidth = 20;
+    let ellipseRadius = ellipseWidth/2;
     for (let i = 0; i < this.verticesArray.length; i++) {
       let ellipsePath = new g.Path();
-      ellipsePath.addEllipse(this.verticesArray[i].x-7.5, this.verticesArray[i].y-7.5, 15, 15);
+
+      ellipsePath.addEllipse(this.verticesArray[i].x-ellipseRadius, 
+                              this.verticesArray[i].y-ellipseRadius, 
+                              ellipseWidth, ellipseWidth);
+
+      ellipsePath = g.colorize(ellipsePath, 'transparent', 'red', 2);                        
       this.ellipsesArray.push(ellipsePath);
     }
-    console.log(`length of ellipsesArray AFTER: ${this.ellipsesArray.length}`);
   }
 
   // Draw circles over each vertex point
@@ -83,13 +83,38 @@ class Shape {
     for (let i = 0; i < this.ellipsesArray.length; i++) {
       let ellipsePath = this.ellipsesArray[i];
       if (ellipsePath.contains(X,Y)) {
-        console.log(`mouse is on vertex ${i+1}`);
+        return {bool: true, index: i};
       }
     }
+    return {bool: false, index: -1};
   }
 
   containsPoint(x, y) {
     return this.path.contains(x,y);
+  }
+
+  // Rebuilds shape from vertices array
+  rebuildShape() {
+    this.path = new g.Path();
+    for (let i = 0; i < this.verticesArray.length; i++) {
+      let x = this.verticesArray[i].x;
+      let y = this.verticesArray[i].y;
+
+      if (i == 0) {
+        this.path.moveTo(x, y);
+      }
+      else {
+        this.path.lineTo(x, y);
+      }
+    }
+    this.closeShape();
+  }
+
+  //update verticesArray with moved vertex co-ordinates
+  //for the vertex at the given index
+  moveVertex(X,Y,index) {
+    // update verticesArray
+    this.verticesArray.splice(index, 1, {x:X, y:Y});
   }
   
 }
