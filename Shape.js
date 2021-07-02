@@ -2,7 +2,7 @@ class Shape {
 
   constructor(startVertex) {
     this.verticesArray = [];
-    this.ellipsesArray;
+    this.ellipsesArray = [];
     this.verticesArray.push(startVertex);
     this.path = new g.Path();
     this.path.moveTo(startVertex.x, startVertex.y);
@@ -14,16 +14,33 @@ class Shape {
     this.verticesArray.push(newVertex);
     this.path.lineTo(newVertex.x, newVertex.y);
   }
+
+  addNewEllipse(newVertex) {
+    let ellipseWidth = 20;
+    let ellipseRadius = ellipseWidth/2;
+    
+    let ellipsePath = new g.Path();
+
+    ellipsePath.addEllipse(newVertex.x-ellipseRadius, 
+                            newVertex.y-ellipseRadius, 
+                            ellipseWidth, ellipseWidth);
+
+    ellipsePath = g.colorize(ellipsePath, 'transparent', 'red', 2);                        
+    this.ellipsesArray.push(ellipsePath);
+  }
   
   closeShape() {
     this.path.closePath();
     this.initialiseEllipsesArray();
   }
   
-  drawShape(fillColour) {
+  drawShape(fillColour,strokeColour) {
     this.path.fill = fillColour;
+    this.path.stroke = strokeColour;
     this.path.draw(drawingContext);
   }
+
+
 
   initialiseEllipsesArray() {
     this.ellipsesArray = [];
