@@ -19,28 +19,25 @@ function setup() {
   nextAction = 'sculpt shapeA';
   
   shapeA = new Shape({ x: 300, y: 300 });
-  shapeA.addNewVertex({ x: 360, y: 300 });
-  shapeA.addNewVertex({ x: 400, y: 420 });
-  shapeA.addNewVertex({ x: 270, y: 420 });
+  shapeA.addNewVertex({ x: 360, y: 300 }, 'line');
+  shapeA.addNewVertex({ x: 400, y: 420 }, 'line');
+  shapeA.addNewVertex({ x: 270, y: 420 }, 'line');
   shapeA.closeShape();
   
   shapeB = new Shape({ x: 200, y: 300 });
-  shapeB.addNewVertex({ x: 335, y: 250 });
-  shapeB.addNewVertex({ x: 320, y: 375 });
-  shapeB.addNewVertex({ x: 250, y: 350 });
+  shapeB.addNewVertex({ x: 335, y: 250 }, 'line');
+  shapeB.addNewVertex({ x: 320, y: 375 }, 'line');
+  shapeB.addNewVertex({ x: 250, y: 350 }, 'line');
   shapeB.closeShape();
 
   shapeC = new Shape({ x: 50, y: 150 });
-  shapeC.addNewVertex({ x: 185, y: 100 });
-  shapeC.addNewVertex({ x: 170, y: 225 });
+  shapeC.addNewVertex({ x: 185, y: 100 }, 'line');
+  shapeC.addNewVertex({ x: 170, y: 225 }, 'line');
   shapeC.path.curveTo(90, 250, 150, 180, 115, 180);
   shapeC.path.quadTo(60, 200, 80, 250);
-  shapeC.addNewVertex({ x: 50, y: 200 });
-  shapeC.closeShape();
- 
+  shapeC.addNewVertex({ x: 50, y: 200 }, 'line');
+  shapeC.closeShape() 
 }
-
-
 
 function draw() { 
   background(60,30,60);
@@ -50,20 +47,28 @@ function draw() {
   //  DRAW: SCULPT MODE
   //
   //////////////////////////
-  if (mode === 'SCULPT') {
-    
-    if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) {
-        shapeA.drawShape(_PURPLE,_IVORY);    
-    }
-    else {
-        shapeA.drawShape(_YELLOW,_IVORY);
-    }
+  if (mode === 'SCULPT') { 
     shapeB.drawShape(_BLUE,_IVORY);
-    intersectShape = new IntersectionShape(shapeA, shapeB);
-    intersectShape.drawShape(_IVORY,_DARKGREY); 
-    
-    if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) { 
-      shapeA.drawVertexEllipses('transparent', 'red');   
+    if (typeof newShape !== 'undefined') {
+      if (newShape.closed) {
+
+        if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) {
+            newShape.drawShape(_PURPLE,_IVORY);    
+        }
+        else {
+            newShape.drawShape(_YELLOW,_IVORY);
+        }
+
+      
+      
+        intersectShape = new IntersectionShape(newShape, shapeB);
+        intersectShape.drawShape(_IVORY,_DARKGREY);
+      }
+      
+      if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) { 
+        newShape.drawVertexEllipses('transparent', 'red');   
+      }
+      
     }
   }
   //////////////////////////
@@ -76,20 +81,21 @@ function draw() {
       newShape.drawShape('transparent',_IVORY);
       newShape.drawVertexEllipses('transparent', 'red');
     }
-
-
   }
 
   //logo and mode text
-  textStuff();
-  
+  textStuff(); 
 }
 
 function mousePressed() {
   if (mode === 'SCULPT') {
-    if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) {
-      shapeA.clickedX = mouseX;
-      shapeA.clickedY = mouseY;
+    if (typeof newShape !== 'undefined') {
+      if (newShape.closed) {
+        if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) {
+          newShape.clickedX = mouseX;
+          newShape.clickedY = mouseY;
+        }
+      }
     }
   }
   //////////////////////////
@@ -103,7 +109,12 @@ function mousePressed() {
       nextAction = 'addLine'; //default next action to adding lines
     }
     else if (nextAction === 'addLine') {
-      newShape.addNewVertex({ x: mouseX, y: mouseY });
+      newShape.addNewVertex({ x: mouseX, y: mouseY }, 'line');
+    }
+    else if (nextAction === 'closeShape') {
+      newShape.closeCreatedShape();
+      newShape.closed = true;
+      return;
     }
     newShape.addNewEllipse({ x: mouseX, y: mouseY });
     console.log(`ellipsesArray.length is: ${newShape.ellipsesArray.length}`);
@@ -113,13 +124,17 @@ function mousePressed() {
 
 function mouseDragged() {
   if (mode === 'SCULPT') {
-    if (shapeA.containsPoint(mouseX,mouseY) || shapeA.mouseOnVertex(mouseX,mouseY).bool) {  
-      if (shapeA.mouseOnVertex(mouseX,mouseY).bool) {
-        shapeA.moveVertex(mouseX,mouseY, shapeA.mouseOnVertex(mouseX,mouseY).index);
-        shapeA.rebuildShape();
-      }
-      else {
-        shapeA.translateShapeFromClickedPoint(mouseX,mouseY);
+    if (typeof newShape !== 'undefined') {
+      if (newShape.closed) {
+        if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) {  
+          if (newShape.mouseOnVertex(mouseX,mouseY).bool) {
+            newShape.moveVertex(mouseX,mouseY, newShape.mouseOnVertex(mouseX,mouseY).index);
+            newShape.rebuildShape();
+          }
+          else {
+            newShape.translateShapeFromClickedPoint(mouseX,mouseY);
+          }
+        }
       }
     }
   }
@@ -133,6 +148,10 @@ function keyPressed() {
   else if (key === 'l') {
     mode = 'CREATE';
     nextAction = 'addLine';
+  }
+  else if (key === 'x') {
+    mode = 'CREATE';
+    nextAction = 'closeShape';
   }
   
   else {

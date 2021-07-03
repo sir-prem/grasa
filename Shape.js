@@ -8,11 +8,14 @@ class Shape {
     this.path.moveTo(startVertex.x, startVertex.y);
     this.clickedX = 0;
     this.clickedY = 0;
+    this.closed = false;
   }
   
-  addNewVertex(newVertex) {
+  addNewVertex(newVertex, type) {
     this.verticesArray.push(newVertex);
-    this.path.lineTo(newVertex.x, newVertex.y);
+    if (type === 'line') {
+      this.path.lineTo(newVertex.x, newVertex.y);
+    }
   }
 
   addNewEllipse(newVertex) {
@@ -32,6 +35,10 @@ class Shape {
   closeShape() {
     this.path.closePath();
     this.initialiseEllipsesArray();
+  }
+
+  closeCreatedShape() {
+    this.path.closePath();
   }
   
   drawShape(fillColour,strokeColour) {
