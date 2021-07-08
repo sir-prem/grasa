@@ -2,41 +2,19 @@
 function setup() {
   createCanvas(800, 600);
   colorMode(HSB, 100);
-  _RED = `hsl(0, 100%, 65%)`;
-  _ORANGE = `hsl(30, 80%, 60%)`;
-  _YELLOW = `hsl(60, 85%, 50%)`;
-  _GREEN = `hsl(120, 60%, 50%)`;
-  _TEAL = `hsl(165, 100%, 40%)`;
-  _BLUE = `hsl(204, 100%, 50%)`;
-  _PURPLE = `hsl(280, 100%, 70%)`;
-  _SLATE = `hsl(240, 20%, 50%)`;
-  _WHITE = `hsl(0, 0%, 100%)`;
-  _DARKGREY = `hsl(0, 0%, 25%)`;
-  _IVORY = `hsl(60, 30%, 95%)`;
-  _NONE = `hsla(0, 0%, 0%, 0.0)`;
 
   mode = 'SCULPT';
   nextAction = 'sculpt shapeA';
+
   
-  shapeA = new Shape({ x: 300, y: 300 });
-  shapeA.addNewVertex({ x: 360, y: 300 }, 'line');
-  shapeA.addNewVertex({ x: 400, y: 420 }, 'line');
-  shapeA.addNewVertex({ x: 270, y: 420 }, 'line');
-  shapeA.closeShape();
   
-  shapeB = new Shape({ x: 200, y: 300 });
-  shapeB.addNewVertex({ x: 335, y: 250 }, 'line');
-  shapeB.addNewVertex({ x: 320, y: 375 }, 'line');
-  shapeB.addNewVertex({ x: 250, y: 350 }, 'line');
+  shapeB = new Shape('powderblue', 'ivory', 1);
+  shapeB.addNewVertex(200, 300, 'start');
+  shapeB.addNewVertex(335, 250, 'line');
+  shapeB.addNewVertex(320, 375, 'line');
+  shapeB.addNewVertex(250, 350, 'line');
   shapeB.closeShape();
 
-  shapeC = new Shape({ x: 50, y: 150 });
-  shapeC.addNewVertex({ x: 185, y: 100 }, 'line');
-  shapeC.addNewVertex({ x: 170, y: 225 }, 'line');
-  shapeC.path.curveTo(90, 250, 150, 180, 115, 180);
-  shapeC.path.quadTo(60, 200, 80, 250);
-  shapeC.addNewVertex({ x: 50, y: 200 }, 'line');
-  shapeC.closeShape() 
 }
 
 function draw() { 
@@ -48,25 +26,24 @@ function draw() {
   //
   //////////////////////////
   if (mode === 'SCULPT') { 
-    shapeB.drawShape(_BLUE,_IVORY);
+    shapeB.draw();
     if (typeof newShape !== 'undefined') {
       if (newShape.closed) {
 
-        if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) {
-            newShape.drawShape(_PURPLE,_IVORY);    
+        if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) {
+            newShape.setColour('moccasin','ivory',1);
         }
         else {
-            newShape.drawShape(_YELLOW,_IVORY);
+            newShape.setColour('lightyellow','ivory',1);
         }
+        newShape.draw();
 
-      
-      
-        intersectShape = new IntersectionShape(newShape, shapeB);
-        intersectShape.drawShape(_IVORY,_DARKGREY);
+        intersectShape = new IntersectionShape(newShape, shapeB, 'ivory', 'slateblue', 1);
+        intersectShape.draw();
       }
       
-      if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) { 
-        newShape.drawVertexEllipses('transparent', 'red');   
+      if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) { 
+        newShape.drawVertexEllipses();   
       }
       
     }
@@ -78,8 +55,8 @@ function draw() {
   //////////////////////////
   else if (mode === 'CREATE') {
     if (typeof newShape !== 'undefined') {
-      newShape.drawShape('transparent',_IVORY);
-      newShape.drawVertexEllipses('transparent', 'red');
+      newShape.draw();
+      newShape.drawVertexEllipses();
     }
   }
 
@@ -88,10 +65,21 @@ function draw() {
 }
 
 function mousePressed() {
+  //////////////////////////
+  //
+  //  MOUSE-PRESSED: SCULPT MODE
+  //
+  //////////////////////////
   if (mode === 'SCULPT') {
     if (typeof newShape !== 'undefined') {
       if (newShape.closed) {
-        if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) {
+        if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) { 
+          if (newShape.mouseOnVertex(mouseX,mouseY).bool) {
+            console.log(`mouseClicked: YES on vertex`);
+          }
+          else {
+            console.log(`mouseClicked: YES in shape`);
+          }
           newShape.clickedX = mouseX;
           newShape.clickedY = mouseY;
         }
@@ -105,20 +93,18 @@ function mousePressed() {
   //////////////////////////
   else if (mode === 'CREATE') {
     if (nextAction === 'startPoint') {
-      newShape = new Shape({ x: mouseX, y: mouseY });
+      newShape = new Shape( 'transparent', 'ivory', 1);
+      newShape.addNewVertex(mouseX, mouseY, 'start');
       nextAction = 'addLine'; //default next action to adding lines
     }
     else if (nextAction === 'addLine') {
-      newShape.addNewVertex({ x: mouseX, y: mouseY }, 'line');
+      newShape.addNewVertex(mouseX, mouseY, 'line');
     }
     else if (nextAction === 'closeShape') {
-      newShape.closeCreatedShape();
+      newShape.closeShape();
       newShape.closed = true;
-      return;
     }
-    newShape.addNewEllipse({ x: mouseX, y: mouseY });
-    console.log(`ellipsesArray.length is: ${newShape.ellipsesArray.length}`);
-    
+    console.log(`verticesArray.length is: ${newShape.verticesArray.length}`);
   }
 }
 
@@ -126,7 +112,10 @@ function mouseDragged() {
   if (mode === 'SCULPT') {
     if (typeof newShape !== 'undefined') {
       if (newShape.closed) {
-        if (newShape.containsPoint(mouseX,mouseY) || newShape.mouseOnVertex(mouseX,mouseY).bool) {  
+        // instead do ... if newShape.vertexBeingDragged 
+        // where vertexBeingDragged is bool
+        // and whichVertexBeingDragged = index (of vertices array)
+        if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) {
           if (newShape.mouseOnVertex(mouseX,mouseY).bool) {
             newShape.moveVertex(mouseX,mouseY, newShape.mouseOnVertex(mouseX,mouseY).index);
             newShape.rebuildShape();
@@ -160,7 +149,6 @@ function keyPressed() {
   }
 }
 
-
 function textStuff() {
   textSize(14);
   fill(0, 0, 90);
@@ -180,3 +168,38 @@ function textStuff() {
   text(`${key} - ${mode} mode`, width-180, 130);
   text(`next action: ${nextAction}`, width-180, 145);
 }
+
+
+
+
+
+
+/*
+  _RED = `hsl(0, 100%, 65%)`;
+  _ORANGE = `hsl(30, 80%, 60%)`;
+  _YELLOW = `hsl(60, 85%, 50%)`;
+  _GREEN = `hsl(120, 60%, 50%)`;
+  _TEAL = `hsl(165, 100%, 40%)`;
+  _BLUE = `hsl(204, 100%, 50%)`;
+  _PURPLE = `hsl(280, 100%, 70%)`;
+  _SLATE = `hsl(240, 20%, 50%)`;
+  _WHITE = `hsl(0, 0%, 100%)`;
+  _DARKGREY = `hsl(0, 0%, 25%)`;
+  _IVORY = `hsl(60, 30%, 95%)`;
+  _NONE = `hsla(0, 0%, 0%, 0.0)`;
+
+  shapeA = new Shape({ x: 300, y: 300 });
+  shapeA.addNewVertex({ x: 360, y: 300 }, 'line');
+  shapeA.addNewVertex({ x: 400, y: 420 }, 'line');
+  shapeA.addNewVertex({ x: 270, y: 420 }, 'line');
+  shapeA.closeShape();
+
+  shapeC = new Shape(
+    { x: 50, y: 150 });
+  shapeC.addNewVertex({ x: 185, y: 100 }, 'line');
+  shapeC.addNewVertex({ x: 170, y: 225 }, 'line');
+  shapeC.path.curveTo(90, 250, 150, 180, 115, 180);
+  shapeC.path.quadTo(60, 200, 80, 250);
+  shapeC.addNewVertex({ x: 50, y: 200 }, 'line');
+  shapeC.closeShape() 
+  */

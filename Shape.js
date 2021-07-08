@@ -1,84 +1,51 @@
 class Shape {
 
-  constructor(startVertex) {
+  constructor(fill, stroke, strokeWidth) {
     this.verticesArray = [];
-    this.ellipsesArray = [];
-    this.verticesArray.push(startVertex);
+    this.fill = fill;
+    this.stroke = stroke;
+    this.strokeWidth = strokeWidth;
     this.path = new g.Path();
-    this.path.moveTo(startVertex.x, startVertex.y);
+    this.path = g.colorize(this.path, fill, stroke, strokeWidth);
     this.clickedX = 0;
     this.clickedY = 0;
     this.closed = false;
   }
   
-  addNewVertex(newVertex, type) {
+  addNewVertex(x, y, type) {
+    let newVertex = new Vertex(x, y, type);
     this.verticesArray.push(newVertex);
-    if (type === 'line') {
+    if (type === 'start') {
+      this.path.moveTo(newVertex.x, newVertex.y);
+    }
+    else if (type === 'line') {
       this.path.lineTo(newVertex.x, newVertex.y);
     }
-  }
-
-  addNewEllipse(newVertex) {
-    let ellipseWidth = 20;
-    let ellipseRadius = ellipseWidth/2;
-    
-    let ellipsePath = new g.Path();
-
-    ellipsePath.addEllipse(newVertex.x-ellipseRadius, 
-                            newVertex.y-ellipseRadius, 
-                            ellipseWidth, ellipseWidth);
-
-    ellipsePath = g.colorize(ellipsePath, 'transparent', 'red', 2);                        
-    this.ellipsesArray.push(ellipsePath);
   }
   
   closeShape() {
     this.path.closePath();
-    this.initialiseEllipsesArray();
-  }
-
-  closeCreatedShape() {
-    this.path.closePath();
   }
   
-  drawShape(fillColour,strokeColour) {
-    this.path.fill = fillColour;
-    this.path.stroke = strokeColour;
+  draw() {  
     this.path.draw(drawingContext);
   }
 
+  setColour(fill, stroke, strokeWidth) {
+    this.path = g.colorize(this.path, fill, stroke, strokeWidth);
+  }
 
-
-  initialiseEllipsesArray() {
-    this.ellipsesArray = [];
-    
-    let ellipseWidth = 20;
-    let ellipseRadius = ellipseWidth/2;
+  // Draw circles over each vertex point for this shape
+  drawVertexEllipses() {
     for (let i = 0; i < this.verticesArray.length; i++) {
-      let ellipsePath = new g.Path();
-
-      ellipsePath.addEllipse(this.verticesArray[i].x-ellipseRadius, 
-                              this.verticesArray[i].y-ellipseRadius, 
-                              ellipseWidth, ellipseWidth);
-
-      ellipsePath = g.colorize(ellipsePath, 'transparent', 'red', 2);                        
-      this.ellipsesArray.push(ellipsePath);
-    }
-  }
-
-  // Draw circles over each vertex point
-  drawVertexEllipses(fill,stroke) {
-    for (let i = 0; i < this.ellipsesArray.length; i++) {
-      let thisEllipsePath = this.ellipsesArray[i];
-      thisEllipsePath.fill = fill;
-      thisEllipsePath.stroke = stroke;
-      thisEllipsePath.draw(drawingContext);
+      let vertexEllipse = this.verticesArray[i].vertexEllipse;
+      vertexEllipse.draw();
     }
 
   }
 
-  translateShape(X,Y) {
-    this.path = g.translate(this.path, {x: X, y: Y});
+  translateShape(x,y) {
+    this.path = g.translate(this.path, {x: x, y: y});
   }
 
   translateShapeFromClickedPoint(X, Y) {
@@ -92,9 +59,10 @@ class Shape {
 
     //update vertices and vertex ellipses
     for (let i = 0; i < this.verticesArray.length; i++) {
-      this.verticesArray[i].x += dx;
-      this.verticesArray[i].y += dy;
-      this.ellipsesArray[i] = g.translate(this.ellipsesArray[i], {x: dx, y: dy});
+      let vertex = this.verticesArray[i];
+      vertex.x += dx;
+      vertex.y += dy;
+      vertex.vertexEllipse.translate(vertex.x,vertex.y);
     }
 
     //update clicked position
@@ -103,14 +71,20 @@ class Shape {
   }
 
   //returns index of array pointing to which vertex the mouse is on
-  mouseOnVertex(X, Y) {
-    for (let i = 0; i < this.ellipsesArray.length; i++) {
-      let ellipsePath = this.ellipsesArray[i];
-      if (ellipsePath.contains(X,Y)) {
+  mouseOnVertex(x, y) {
+    for (let i = 0; i < this.verticesArray.length; i++) {
+      let ellipsePath = this.getEllipsePath(i);
+      if (ellipsePath.contains(x, y)) {
         return {bool: true, index: i};
       }
     }
     return {bool: false, index: -1};
+  }
+
+  //get ellipseVertex path for vertex at index 
+  getEllipsePath(index) {
+    let vertex = this.verticesArray[index];
+    return vertex.vertexEllipse.getPath();
   }
 
   containsPoint(x, y) {
@@ -121,8 +95,9 @@ class Shape {
   rebuildShape() {
     this.path = new g.Path();
     for (let i = 0; i < this.verticesArray.length; i++) {
-      let x = this.verticesArray[i].x;
-      let y = this.verticesArray[i].y;
+      let vertex = this.verticesArray[i];
+      let x = vertex.x;
+      let y = vertex.y;
 
       if (i == 0) {
         this.path.moveTo(x, y);
@@ -132,13 +107,20 @@ class Shape {
       }
     }
     this.closeShape();
+    this.setColour(this.fill, this.stroke, this.strokeWidth);
   }
 
   //update verticesArray with moved vertex co-ordinates
   //for the vertex at the given index
-  moveVertex(X,Y,index) {
-    // update verticesArray
-    this.verticesArray.splice(index, 1, {x:X, y:Y});
+  moveVertex(x,y,index) {
+      //update vertex position
+      let vertex = this.verticesArray[index];
+      vertex.x = x;
+      vertex.y = y;
+      //update vertex's ellipse position
+      vertex.vertexEllipse.translate(vertex.x,vertex.y);
+    // replace old vertex in verticesArray with updated one
+    this.verticesArray.splice(index, 1, vertex);
   }
   
 }
