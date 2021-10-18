@@ -1,0 +1,85 @@
+<%- include('_header.ejs') %>
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <h1>An abstract shape ideation tool</h1>
+
+        <div style="background-color: whitesmoke; padding: 5%;">
+        
+            <h2>grasa provides the user the ability to manipulate shapes
+                while re-calculating their intersections in real-time.
+            </h2>
+            
+            <h2>This provides a platform for fluid shape ideation, as the user
+                is empowered to work with shape interactions dynamically.
+            </h2>
+
+            <p><a class="btn btn-primary" data-bs-toggle="collapse" href="#aboutExpand" 
+                    role="button" aria-expanded="false" aria-controls="aboutExpand">
+                            Explain further</a></p>
+
+            <div class="collapse" id="aboutExpand">
+                <div class="card card-body">
+                <p>Hop into the queue that suits you best based on distance 
+                    from where you are, and queue sizes. If your situation changes,
+                    simply <b>hop backwards</b> a few positions in the queue that you're in, 
+                    or <b>hop into a different clinic</b> instead.</p>
+        
+                <p>Your medical records are stored in a <b>centralised database</b>, meaning that
+                    whichever clinic you visit, the clinic will have avail of your <b>registration
+                    details</b> so you never have to re-register, and your doctor will have avail 
+                    of your <b>medical records</b> and <b>consultation history</b> so they will be 
+                    up-to-date on your health condition.</p>
+                
+                </div>
+            </div>
+
+        </div>
+
+        <table width="100%">
+            <tr>
+                <td align="right">
+                    <a class="btn btn-primary btn-lg" href="/signup">Sign Up</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6 card rounded login">
+        <h2>Login</h2>
+        <p>Existing users, please log in below.</p>
+        <table class="table table-borderless">
+            <form action="/login" method="POST">
+                <tr>
+                    <td>Username:</td>
+                    <td>
+                        <input name="username" type="text" class="form-control"
+                        placeholder="Username">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td>
+                        <input name="password" type="password" class="form-control"
+                        placeholder="Password">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="right">
+                        <input type="submit" value="Log in" class="btn btn-primary">
+                    </td>
+                </tr>          
+            </form>
+        </table>
+
+    </div>
+    <div class="col-sm-6">
+        <img src="grasa.gif" width="100%">
+    </div>
+</div>
+
+
+<%- include('_footer.ejs') %>

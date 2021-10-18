@@ -13,15 +13,36 @@ class Shape {
   }
   
   addNewVertex(x, y, type) {
+
     let newVertex = new Vertex(x, y, type);
+
+    switch(type) {
+      
+      case 'start':
+
+        this.path.moveTo(newVertex.x, newVertex.y);     break;
+
+      case 'line':
+
+        this.path.lineTo(newVertex.x, newVertex.y);     break;
+
+      case 'bezier':
+
+        let newVertexHandle1 = new VertexHandle( 350, 150, 'transparent', 'lightpink', 0.5 );
+        let newVertexHandle2 = new VertexHandle( 150, 350, 'transparent', 'tan', 0.5 );
+        newVertex.handlesArray.push(newVertexHandle1);
+        newVertex.handlesArray.push(newVertexHandle2);
+
+        this.path.curveTo(  350, 150,   
+                            150, 350,   
+                            newVertex.x,  newVertex.y );  break;
+    }
+    
     this.verticesArray.push(newVertex);
-    if (type === 'start') {
-      this.path.moveTo(newVertex.x, newVertex.y);
-    }
-    else if (type === 'line') {
-      this.path.lineTo(newVertex.x, newVertex.y);
-    }
+
   }
+
+ 
   
   closeShape() {
     this.path.closePath();
@@ -41,7 +62,26 @@ class Shape {
       let vertexEllipse = this.verticesArray[i].vertexEllipse;
       vertexEllipse.draw();
     }
+  }
 
+  drawVertexCoordinates() {
+    for (let i = 0; i < this.verticesArray.length; i++) {
+      let vertex = this.verticesArray[i];
+      vertex.drawCoordinates();
+    }
+  }
+
+  drawVertexHandles() {
+    for (let i = 0; i < this.verticesArray.length; i++) {
+      let vertex = this.verticesArray[i];
+      switch(vertex.type) {
+        case 'bezier':
+          vertex.handlesArray[0].drawHandleLine(vertex.x, vertex.y);
+          vertex.handlesArray[0].drawCoordinates(0);
+          vertex.handlesArray[1].drawHandleLine(vertex.x, vertex.y);
+          vertex.handlesArray[1].drawCoordinates(1);
+      }
+    }
   }
 
   translateShape(x,y) {

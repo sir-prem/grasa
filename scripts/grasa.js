@@ -1,6 +1,9 @@
 
 function setup() {
-  createCanvas(800, 600);
+  let sketchWidth = document.getElementById("grasa-div").offsetWidth;
+  let sketchHeight = document.getElementById("grasa-div").offsetHeight;
+  let renderer = createCanvas(sketchWidth, 700);
+  renderer.parent("grasa-div");
   colorMode(HSB, 100);
 
   mode = 'SCULPT';
@@ -15,49 +18,27 @@ function setup() {
   shapeB.addNewVertex(250, 350, 'line');
   shapeB.closeShape();
 
+
+  shapeC = new Shape('powderblue', 'ivory', 1);
+  shapeC.addNewVertex({ x: 50, y: 150 }, 'start');
+  shapeC.addNewVertex({ x: 185, y: 100 }, 'line');
+  shapeC.addNewVertex({ x: 170, y: 225 }, 'line');
+  shapeC.path.curveTo(90, 250, 150, 180, 115, 180);
+  shapeC.path.quadTo(60, 200, 80, 250);
+  shapeC.addNewVertex({ x: 50, y: 200 }, 'line');
+  shapeC.closeShape() 
+
 }
 
 function draw() { 
   background(60,30,60);
   
-  //////////////////////////
-  //
-  //  DRAW: SCULPT MODE
-  //
-  //////////////////////////
   if (mode === 'SCULPT') { 
-    shapeB.draw();
-    if (typeof newShape !== 'undefined') {
-      if (newShape.closed) {
-
-        if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) {
-            newShape.setColour('moccasin','ivory',1);
-        }
-        else {
-            newShape.setColour('lightyellow','ivory',1);
-        }
-        newShape.draw();
-
-        intersectShape = new IntersectionShape(newShape, shapeB, 'ivory', 'slateblue', 1);
-        intersectShape.draw();
-      }
-      
-      if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) { 
-        newShape.drawVertexEllipses();   
-      }
-      
-    }
+    sculptDraw();
   }
-  //////////////////////////
-  //
-  //  DRAW: CREATE MODE
-  //
-  //////////////////////////
+  
   else if (mode === 'CREATE') {
-    if (typeof newShape !== 'undefined') {
-      newShape.draw();
-      newShape.drawVertexEllipses();
-    }
+    createShape();
   }
 
   //logo and mode text
@@ -152,10 +133,8 @@ function keyPressed() {
 function textStuff() {
   textSize(14);
   fill(0, 0, 90);
-  text(`(${mouseX},${mouseY})`, mouseX+10, mouseY+20);
-  textSize(14);
-  fill(0, 0, 90);
-  text(`(${mouseX},${mouseY})`, mouseX+10, mouseY+20);
+  text(`(${Math.trunc(mouseX)},${Math.trunc(mouseY)})`, mouseX+10, mouseY+20);
+  
   textSize(18);
   fill(0, 0, 100);
   text(`grasa v1.0`, width-135, 30);
@@ -170,8 +149,52 @@ function textStuff() {
 }
 
 
+//////////////////////////
+  //
+  //  DRAW: SCULPT MODE
+  //
+  //////////////////////////
+function sculptDraw() {
 
+  shapeB.draw();
+  shapeC.draw();
 
+  if (typeof newShape !== 'undefined') {
+    if (newShape.closed) {
+
+      if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) {
+          newShape.setColour('moccasin','ivory',1);
+      }
+      else {
+          newShape.setColour('lightyellow','ivory',1);
+      }
+      newShape.draw();
+
+      intersectShape = new IntersectionShape(newShape, shapeB, 'ivory', 'slateblue', 1);
+      intersectShape.draw();
+
+      intersectShape2 = new IntersectionShape(newShape, shapeC, 'ivory', 'slateblue', 1);
+      intersectShape2.draw();
+    }
+    
+    if ( newShape.mouseOnVertex(mouseX,mouseY).bool || newShape.containsPoint(mouseX,mouseY) ) { 
+      newShape.drawVertexEllipses();   
+    }
+    
+  }
+}
+
+//////////////////////////
+  //
+  //  DRAW: CREATE MODE
+  //
+  //////////////////////////
+function createShape() {
+  if (typeof newShape !== 'undefined') {
+    newShape.draw();
+    newShape.drawVertexEllipses();
+  }
+}
 
 
 /*
