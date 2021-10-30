@@ -136,5 +136,5 @@ function textStuff() {
 }
 
 function drawBackground() {
-    background(60,30,60);
+    background(60,30,90);
 }
