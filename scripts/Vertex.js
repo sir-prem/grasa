@@ -9,12 +9,48 @@ class Vertex {
         // calculate handles
         //this.handlesArray = getHandlesArray(x, y, type);
         this.handlesArray = [];
+
+        
+        this.xDraggedDistance = 0;
+        this.yDraggedDistance = 0;
     }
 
     drawCoordinates() {
         textSize(14);
         fill(0, 0, 90);
-        text(`(${this.x},${this.y})`, this.x+2, this.y);
+        text(`(${Math.trunc(this.x)},${Math.trunc(this.y)})`, this.x+2, this.y);
     }
 
+    moveToNewPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    offsetPosition(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+
+    setVertexToDragging() {
+        this.isDragging = true;
+    }
+
+    setVertexToStationary() {
+        this.isDragging = false;
+    }
+
+    updateDraggedDistance(dx, dy) {
+        this.xDraggedDistance = dx;
+        this.yDraggedDistance = dy;
+    }
+
+    hasHandles() {
+        switch (this.type) {
+            case 'start':
+            case 'line':
+                return false;
+            default:
+                return true;
+        }
+    }
 }

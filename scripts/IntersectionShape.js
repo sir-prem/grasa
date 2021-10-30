@@ -10,7 +10,7 @@ class IntersectionShape {
         this.path = g.colorize(this.path, fill, stroke, strokeWidth);
     }
 
-    draw() {
+    drawPath() {
         this.path.draw(drawingContext);
     }
 

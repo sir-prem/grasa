@@ -20,6 +20,11 @@ class VertexEllipse {
         this.ellipsePath.draw(drawingContext);
     }
 
+    updatePosition(x,y) {
+        this.x = x;
+        this.y = y;
+    }
+
     translate(x,y) {
         this.x = x;
         this.y = y;
@@ -31,6 +36,9 @@ class VertexEllipse {
     }
 
     setColour(fill, stroke, strokeWidth) {
+        this.fill = fill;
+        this.stroke = stroke;
+        this.strokeWidth = strokeWidth;
         this.ellipsePath = g.colorize(this.ellipsePath, fill, stroke, strokeWidth);
     }
 
