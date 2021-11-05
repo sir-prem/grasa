@@ -11,6 +11,11 @@ function setup() {
     renderer.parent("grasa-div");
     colorMode(HSB, 100);
 
+    // do config
+    config = setupConfig();
+
+
+
     mode = 'SCULPT';
     nextAction = 'sculpt shapeA';
 
@@ -28,11 +33,7 @@ function draw() {
 }
 
 function mouseMoved() {
-    shapeBez.mouseOverVertex(mouseX, mouseY,
-                            'goldenrod', 'indianred', 2,
-                            'lightskyblue', 'lightsteelblue', 2,
-                            'transparent', 'indianred', 2,
-                            'transparent', 'lightsteelblue', 2);
+    shapeBez.mouseOverVertex(mouseX, mouseY);
 
 // prevent default
 return false;
@@ -42,10 +43,10 @@ function mousePressed() {
     if (shapeBez.isMouseOverWhichVertex(mouseX, mouseY).bool) {
         switch(shapeBez.isMouseOverWhichVertex(mouseX, mouseY).type) {
             case 'vertex':
-                shapeBez.activateVertex(mouseX, mouseY, 'indianred', 'indianred', 2);
+                shapeBez.activateVertex(mouseX, mouseY, 'mouseclick');
                 shapeBez.updateClickedPosition(mouseX, mouseY);
             case 'handle':
-                shapeBez.activateHandle(mouseX, mouseY, 'cornflowerblue', 'lightsteelblue', 2);
+                shapeBez.activateHandle(mouseX, mouseY, 'mouseclick');
         }
         
     }
@@ -136,5 +137,87 @@ function textStuff() {
 }
 
 function drawBackground() {
-    background(60,30,90);
+    // hue (0-360)
+    // saturation (0-100)
+    // value (0-100) where 0 is black, and 100 is white
+    background(config.backgroundColour.hue,
+                config.backgroundColour.saturation,
+                config.backgroundColour.value);
+}
+
+function setupConfig() {
+
+    mouseOverVertex = {
+        fill:           'goldenrod',
+        stroke:         'indianred',
+        strokeWidth:    2
+    };
+
+    mouseOutVertex = {
+        fill:           'transparent',
+        stroke:         'indianred',
+        strokeWidth:    2
+    };
+
+    mouseClickVertex = {
+        fill:           'indianred',
+        stroke:         'indianred',
+        strokeWidth:    2
+    };
+
+    mouseOverHandle = {
+        fill:           'lightskyblue',
+        stroke:         'lightsteelblue',
+        strokeWidth:    2
+    };
+
+    mouseOutHandle = {
+        fill:           'transparent',
+        stroke:         'indianred',
+        strokeWidth:    2
+    };
+
+    mouseClickHandle = {
+        fill:           'cornflowerblue',
+        stroke:         'lightsteelblue',
+        strokeWidth:    2
+    };
+
+    ellipseRadii = {
+        vertex:         15,
+        handle:         8
+    };
+
+    handles = {
+        handle1: {
+            stroke:         'lightpink',
+            strokeWidth:    0.5
+        },
+        handle2: {
+            stroke:         'tan',
+            strokeWidth:    0.5
+        }
+    };
+
+    backgroundColour = {
+        hue:            60,
+        saturation:     25,
+        value:          35
+    };
+
+
+    configData = {
+        mouseOverVertex,
+        mouseOutVertex,
+        mouseClickVertex,
+        mouseOverHandle,
+        mouseOutHandle,
+        mouseClickHandle,
+        ellipseRadii,
+        handles,
+        backgroundColour
+    }
+
+    config = new Config(configData);
+    return config;
 }

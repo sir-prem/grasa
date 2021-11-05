@@ -37,8 +37,8 @@ class Shape {
             this.path.lineTo(newVertex.x, newVertex.y);     break;
     
           case 'bezier':
-            let newVertexHandle1 = new VertexHandle( 350, 150, 'transparent', 'lightpink', 0.5 );
-            let newVertexHandle2 = new VertexHandle( 150, 350, 'transparent', 'tan', 0.5 );
+            let newVertexHandle1 = new VertexHandle( 350, 150, 'lightpink', 0.5 );
+            let newVertexHandle2 = new VertexHandle( 150, 350, 'tan', 0.5 );
             newVertex.handlesArray.push(newVertexHandle1);
             newVertex.handlesArray.push(newVertexHandle2);
     
@@ -99,8 +99,6 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-
-
     setActiveVertexIndex(index) {
         this.activeVertexIndex = index;
     }
@@ -141,87 +139,107 @@ class Shape {
         return false;
     }
 
-    setVertexEllipseColour(index, fill, stroke, strokeWidth) {
-        this.verticesArray[index].vertexEllipse.setColour(fill, stroke, strokeWidth);
+    setEllipseColour(vertexIndex, handleIndex, type, configEvent) {
+        let object;
+        switch(type) {
+            case 'vertex':
+                object = this.verticesArray[vertexIndex];   break;
+            case 'handle':
+                let vertex = this.verticesArray[vertexIndex];
+                object = vertex.handlesArray[handleIndex];  break;
+        }
+        object.vertexEllipse.setColour(
+            configEvent.fill, 
+            configEvent.stroke, 
+            configEvent.strokeWidth
+            );
+            
     }
-
-    setHandleEllipseColour(handleIndex, fill, stroke, strokeWidth) {
+/*
+    setHandleEllipseColour(handleIndex, event) {
         let vertex = this.verticesArray[this.activeVertexIndex];
         let handle = vertex.handlesArray[handleIndex];
-        handle.vertexEllipse.setColour(fill, stroke, strokeWidth);
+        switch(event) {
+            case 'mouseover':
+                handle.vertexEllipse.setColour(
+                    config.mouseOverHandle.fill, 
+                    config.mouseOverHandle.stroke, 
+                    config.mouseOverHandle.strokeWidth
+                    );          break;
+            case 'mouseclick':
+                handle.vertexEllipse.setColour(
+                    config.mouseClickHandle.fill, 
+                    config.mouseClickHandle.stroke, 
+                    config.mouseClickHandle.strokeWidth
+                    );          break;
+        }
+    }
+*/
+    activateVertexOrHandle(vertexIndex, handleIndex, type, configEvent) {
+        switch (type) {
+            case 'vertex':
+                this.setEllipseColour(vertexIndex, -1, 'vertex', configEvent);
+                this.setActiveVertexIndex(vertexIndex);     break;
+            case 'handle':
+                this.setEllipseColour(vertexIndex, handleIndex, 'handle', configEvent);
+                this.setActiveHandleIndex(handleIndex);     break;
+        }
     }
 
-    activateVertex(x, y, fill, stroke, strokeWidth) {
-        let whichVertex = this.isMouseOverWhichVertex(x, y).index;
-        let vertex = this.verticesArray[whichVertex];
-        vertex.vertexEllipse.setColour(fill, stroke, strokeWidth);
-        this.setActiveVertexIndex(whichVertex);
+    activateHandleAndItsParentVertex(vertexIndex, handleIndex, configEventVertex, configEventHandle) {
+        this.activateVertexOrHandle(vertexIndex, handleIndex, 'handle', configEventHandle);
+        this.activateVertexOrHandle(vertexIndex, -1, 'vertex', configEventVertex);
     }
 
-    activateHandle(x, y, fill, stroke, strokeWidth) {
-        let whichVertex = this.isMouseOverWhichVertex(x, y).index;
-        let vertex = this.verticesArray[whichVertex];
-        let whichHandle = this.isMouseOverWhichVertex(x, y).handleIndex;
-        let handle = vertex.handlesArray[whichHandle];
-        handle.vertexEllipse.setColour(fill, stroke, strokeWidth);
-        this.setActiveHandleIndex(whichHandle);
-    }
-
-    activateHandleAndVertex(x, y, vertexFill, vertexStroke, vertexStrokeWidth, 
-                                    handleFill, handleStroke, handleStrokeWidth) {
-        this.activateVertex(x, y, vertexFill, vertexStroke, vertexStrokeWidth);
-        this.activateHandle(x, y, handleFill, handleStroke, handleStrokeWidth);
-    }
-
-    deactivateVertex(vertexFill, vertexStroke, vertexStrokeWidth) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        vertex.vertexEllipse.setColour(vertexFill, vertexStroke, vertexStrokeWidth);
-        this.setActiveVertexIndex(-1);
-    }
-
-    deactivateHandle(fill, stroke, strokeWidth) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        let handle = vertex.handlesArray[this.activeHandleIndex];
-        handle.vertexEllipse.setColour(fill, stroke, strokeWidth);
-        this.setActiveHandleIndex(-1);
+    deactivateVertexOrHandle(type, configEvent) {
+        switch(type) {
+            case 'vertex':
+                this.setEllipseColour(
+                            this.activeVertexIndex, 
+                            -1, 
+                            'vertex', configEvent);
+                this.setActiveVertexIndex(-1);      break;
+            case 'handle':
+                this.setEllipseColour(
+                            this.activeVertexIndex, 
+                            this.activeHandleIndex,
+                            'handle', configEvent);
+                this.setActiveHandleIndex(-1);      break;
+        }
     }
 
     // note: must deactivate Handle before its Vertex as handle depends on vertex
-    deactivateHandleAndVertex(vertexFill, vertexStroke, vertexStrokeWidth, 
-                                handleFill, handleStroke, handleStrokeWidth) {
-        this.deactivateHandle(handleFill, handleStroke, handleStrokeWidth);
-        this.deactivateVertex(vertexFill, vertexStroke, vertexStrokeWidth);
+    deactivateHandleAndItsParentVertex(configEventVertex, configEventHandle) {
+        this.deactivateVertexOrHandle('handle', configEventHandle);
+        this.deactivateVertexOrHandle('vertex', configEventVertex);
     }
 
-    mouseOverVertex(mouseX, mouseY,
-                                enteringFill, enteringStroke, enteringStrokeWidth,
-                                handleEnteringFill, handleEnteringStroke, handleEnteringStrokeWidth,
-                                exitingFill, exitingStroke, exitingStrokeWidth,
-                                handleExitingFill, handleExitingStroke, handleExitingStrokeWidth) {
+    mouseOverVertex(mouseX, mouseY) {
+        let mouseOverNode = this.isMouseOverWhichVertex(mouseX, mouseY);
         // mouse moving into a vertex
-        if (this.isMouseOverWhichVertex(mouseX, mouseY).bool) {
-            switch(this.isMouseOverWhichVertex(mouseX, mouseY).type) {
+        if (mouseOverNode.bool) {
+            switch(mouseOverNode.type) {
                 case 'vertex':
-                    this.activateVertex(mouseX, mouseY, 
-                        enteringFill, enteringStroke, enteringStrokeWidth);        break;
+                    this.activateVertexOrHandle(
+                                mouseOverNode.index, 
+                                -1, 
+                                'vertex', config.mouseOverVertex);      break;
                 case 'handle':
-                    this.activateHandleAndVertex(mouseX, mouseY, 
-                        enteringFill, enteringStroke, enteringStrokeWidth,
-                        handleEnteringFill, handleEnteringStroke, handleEnteringStrokeWidth);  break;
+                    this.activateHandleAndItsParentVertex(
+                                mouseOverNode.index,
+                                mouseOverNode.handleIndex,
+                                config.mouseOverVertex, config.mouseOverHandle);    break;
             }
         }
         // mouse moving out of a vertex
         if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            if (this.isMouseOverWhichVertex(mouseX, mouseY).bool === false) {
-
+            if (mouseOverNode.bool === false) {
                 switch(this.whichVertexTypeActive()) {
                     case 'handle':
-                        this.deactivateHandleAndVertex(
-                            exitingFill, exitingStroke, exitingStrokeWidth,
-                            handleExitingFill, handleExitingStroke, handleExitingStrokeWidth);   break;
+                        this.deactivateHandleAndItsParentVertex(
+                                config.mouseOutVertex, config.mouseOutHandle);      break;
                     case 'vertex':
-                        this.deactivateVertex(
-                            exitingFill, exitingStroke, exitingStrokeWidth);   break;
+                        this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
                 }
             }
         }
@@ -272,10 +290,9 @@ class Shape {
         return false;
     }
 
-    //get ellipseVertex path for given vertex
-    getEllipsePath(vertex) {
-        //let vertex = this.verticesArray[index];
-        return vertex.vertexEllipse.getPath();
+    //get ellipse path for given vertex or handle node
+    getEllipsePath(node) {
+        return node.vertexEllipse.getPath();
     }
 
 

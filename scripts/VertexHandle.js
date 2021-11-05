@@ -1,27 +1,26 @@
 class VertexHandle {
 
-    constructor (x, y, fill, stroke, strokeWidth ) {
+    constructor (x, y, stroke, strokeWidth ) {
         this.x = x;
         this.y = y;
-        this.fill = fill;
         this.stroke = stroke;
         this.strokeWidth = strokeWidth;
-        this.initialisePathAndColorize(fill, stroke, strokeWidth);
+        this.initialisePathAndColorize(stroke, strokeWidth);
         this.xDraggedPosition = x;
         this.yDraggedPosition = y;
         this.vertexEllipse = new VertexEllipse( this.xDraggedPosition, this.yDraggedPosition,'transparent', 'lightsteelblue', 2, 8 );
     }
 
     drawHandleLine(xParentVertex, yParentVertex) {
-        this.initialisePathAndColorize(this.fill, this.stroke, this.strokeWidth)
+        this.initialisePathAndColorize(this.stroke, this.strokeWidth)
         this.handleLinePath.moveTo(xParentVertex, yParentVertex);
         this.handleLinePath.lineTo(this.xDraggedPosition, this.yDraggedPosition);
         this.handleLinePath.draw(drawingContext);
     }
 
-    initialisePathAndColorize(fill, stroke, strokeWidth) {
+    initialisePathAndColorize(stroke, strokeWidth) {
         this.handleLinePath = new g.Path();
-        this.handleLinePath = g.colorize(this.handleLinePath, fill, stroke, strokeWidth);
+        this.handleLinePath = g.colorize(this.handleLinePath, 'transparent', stroke, strokeWidth);
     }
 
     drawCoordinates(index) {
