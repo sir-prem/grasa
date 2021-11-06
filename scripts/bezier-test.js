@@ -35,66 +35,20 @@ function draw() {
 function mouseMoved() {
     shapeBez.mouseOverVertex(mouseX, mouseY);
 
-// prevent default
-return false;
+    // prevent default
+    return false;
 }
 
 function mousePressed() {
-    if (shapeBez.isMouseOverWhichVertex(mouseX, mouseY).bool) {
-        switch(shapeBez.isMouseOverWhichVertex(mouseX, mouseY).type) {
-            case 'vertex':
-                shapeBez.activateVertex(mouseX, mouseY, 'mouseclick');
-                shapeBez.updateClickedPosition(mouseX, mouseY);
-            case 'handle':
-                shapeBez.activateHandle(mouseX, mouseY, 'mouseclick');
-        }
-        
-    }
+    shapeBez.mousePressOnNode(mouseX, mouseY);
 }
 
 function mouseReleased() {
-    // if vertex or handle was being dragged
-    if (shapeBez.isDragging === true) {
-        switch(shapeBez.whichVertexTypeActive()) {
-            case 'vertex':
-                shapeBez.dropVertexHandles(shapeBez.activeVertexIndex);  break;
-            case 'handle':
-                //shapeBez.dropVertexHandles(shapeBez.activeVertexIndex);  break;
-        }
-        shapeBez.isDragging = false;
-    }
-    // if mouse clicked and released on the spot (without dragging mouse)
-    else {
-        switch(shapeBez.whichVertexTypeActive()) {
-            case 'vertex':
-                shapeBez.setVertexEllipseColour( shapeBez.activeVertexIndex, 'goldenrod', 'indianred', 2); break;
-            case 'handle':
-                shapeBez.setHandleEllipseColour( shapeBez.activeHandleIndex, 'lightskyblue', 'lightsteelblue', 2); break;
-            case 'neither':
-                if (shapeBez.hasActiveHandle()) {
-                    shapeBez.deactivateHandleAndVertex('transparent', 'indianred', 2,
-                                                        'transparent', 'lightsteelblue', 2);
-                }
-                else if (shapeBez.hasActiveVertex()) {
-                    shapeBez.deactivateVertex('transparent', 'indianred', 2);
-                }
-        }
-    }
+    shapeBez.mouseReleasedOnNode();
 }
 
 function mouseDragged() {
-    if (shapeBez.hasActiveVertex() || shapeBez.hasActiveHandle()) {
-        shapeBez.isDragging = true;
-    }
-    if (shapeBez.isDragging === true) {
-        switch(shapeBez.whichVertexTypeActive()) {
-            case 'vertex':
-                shapeBez.moveOrOffsetVertex(mouseX,mouseY,true);  break;
-            case 'handle':
-                shapeBez.moveHandle(mouseX, mouseY);            break;
-        }
-        shapeBez.reconstructShape();
-    }
+    shapeBez.mouseDraggingNode(mouseX, mouseY);
 }
 
 
@@ -147,40 +101,42 @@ function drawBackground() {
 
 function setupConfig() {
 
+    let ellipseStrokeWidth = 1;
+
     mouseOverVertex = {
         fill:           'goldenrod',
         stroke:         'indianred',
-        strokeWidth:    2
+        strokeWidth:    ellipseStrokeWidth
     };
 
     mouseOutVertex = {
         fill:           'transparent',
         stroke:         'indianred',
-        strokeWidth:    2
+        strokeWidth:    ellipseStrokeWidth
     };
 
     mouseClickVertex = {
         fill:           'indianred',
         stroke:         'indianred',
-        strokeWidth:    2
+        strokeWidth:    ellipseStrokeWidth
     };
 
     mouseOverHandle = {
         fill:           'lightskyblue',
         stroke:         'lightsteelblue',
-        strokeWidth:    2
+        strokeWidth:    ellipseStrokeWidth
     };
 
     mouseOutHandle = {
         fill:           'transparent',
         stroke:         'indianred',
-        strokeWidth:    2
+        strokeWidth:    ellipseStrokeWidth
     };
 
     mouseClickHandle = {
         fill:           'cornflowerblue',
         stroke:         'lightsteelblue',
-        strokeWidth:    2
+        strokeWidth:    ellipseStrokeWidth
     };
 
     ellipseRadii = {

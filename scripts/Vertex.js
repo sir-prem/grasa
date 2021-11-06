@@ -4,7 +4,12 @@ class Vertex {
         this.x = x;
         this.y = y;
         this.type = type; // { 'start', 'line', 'bezier', 'quadratic' }
-        this.vertexEllipse = new VertexEllipse( x, y,'transparent', 'indianred', 2, 15 );
+        this.vertexEllipse = new VertexEllipse( 
+                            x, y,
+                            config.mouseOutVertex.fill,
+                            config.mouseOutVertex.stroke,
+                            config.mouseOutVertex.strokeWidth,
+                            config.ellipseRadii.vertex );
 
         // calculate handles
         //this.handlesArray = getHandlesArray(x, y, type);
@@ -52,5 +57,9 @@ class Vertex {
             default:
                 return true;
         }
+    }
+
+    calculateInitialHandleCoordinates(x, y, xPrev, yPrev) {
+
     }
 }

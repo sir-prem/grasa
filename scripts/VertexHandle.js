@@ -8,7 +8,12 @@ class VertexHandle {
         this.initialisePathAndColorize(stroke, strokeWidth);
         this.xDraggedPosition = x;
         this.yDraggedPosition = y;
-        this.vertexEllipse = new VertexEllipse( this.xDraggedPosition, this.yDraggedPosition,'transparent', 'lightsteelblue', 2, 8 );
+        this.vertexEllipse = new VertexEllipse( 
+                        this.xDraggedPosition, this.yDraggedPosition,
+                        config.mouseOutHandle.fill,
+                        config.mouseOutHandle.stroke,
+                        config.mouseOutHandle.strokeWidth,
+                        config.ellipseRadii.handle );
     }
 
     drawHandleLine(xParentVertex, yParentVertex) {

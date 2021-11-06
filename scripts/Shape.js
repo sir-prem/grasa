@@ -37,8 +37,18 @@ class Shape {
             this.path.lineTo(newVertex.x, newVertex.y);     break;
     
           case 'bezier':
-            let newVertexHandle1 = new VertexHandle( 350, 150, 'lightpink', 0.5 );
-            let newVertexHandle2 = new VertexHandle( 150, 350, 'tan', 0.5 );
+            let prevVertexCoords = this.getPreviousVertexCoordinates();
+            //calculateInitialHandleCoordinates(
+            //                            x, y, 
+            //                            prevVertexCoords.x, prevVertexCoords.y);
+            let newVertexHandle1 = new VertexHandle( 
+                                    350, 150, 
+                                    config.handles.handle1.stroke, 
+                                    config.handles.handle1.strokeWidth );
+            let newVertexHandle2 = new VertexHandle( 
+                                    150, 350, 
+                                    config.handles.handle2.stroke, 
+                                    config.handles.handle2.strokeWidth );
             newVertex.handlesArray.push(newVertexHandle1);
             newVertex.handlesArray.push(newVertexHandle2);
     
@@ -155,26 +165,7 @@ class Shape {
             );
             
     }
-/*
-    setHandleEllipseColour(handleIndex, event) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        let handle = vertex.handlesArray[handleIndex];
-        switch(event) {
-            case 'mouseover':
-                handle.vertexEllipse.setColour(
-                    config.mouseOverHandle.fill, 
-                    config.mouseOverHandle.stroke, 
-                    config.mouseOverHandle.strokeWidth
-                    );          break;
-            case 'mouseclick':
-                handle.vertexEllipse.setColour(
-                    config.mouseClickHandle.fill, 
-                    config.mouseClickHandle.stroke, 
-                    config.mouseClickHandle.strokeWidth
-                    );          break;
-        }
-    }
-*/
+
     activateVertexOrHandle(vertexIndex, handleIndex, type, configEvent) {
         switch (type) {
             case 'vertex':
@@ -242,6 +233,56 @@ class Shape {
                         this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
                 }
             }
+        }
+    }
+
+    mousePressOnNode(mouseX, mouseY) {
+        switch(this.whichVertexTypeActive()) {
+            case 'neither':
+                break;  //do nothing
+            case 'handle':
+                this.setEllipseColour(
+                                this.activeVertexIndex, this.activeHandleIndex, 
+                                'handle', config.mouseClickHandle);
+            case 'vertex':
+                this.setEllipseColour(
+                                this.activeVertexIndex, -1, 
+                                'vertex', config.mouseClickVertex);
+            default:
+                this.updateClickedPosition(mouseX, mouseY);
+        }
+    }
+
+    mouseReleasedOnNode() {
+        switch(this.whichVertexTypeActive()) {
+            case 'handle':
+                this.setEllipseColour(
+                                this.activeVertexIndex, this.activeHandleIndex, 
+                                'handle', config.mouseOverHandle);
+            case 'vertex':
+                this.setEllipseColour(
+                                this.activeVertexIndex, -1, 
+                                'vertex', config.mouseOverVertex);
+                // if vertex or handle was being dragged
+                if (this.isDragging === true) {     
+                    this.dropVertexHandles(this.activeVertexIndex);
+                    this.isDragging = false;
+                }       break;
+        }
+    }
+
+    mouseDraggingNode(mouseX, mouseY) {
+        if (this.hasActiveVertex() || this.hasActiveHandle()) {
+            this.isDragging = true;
+        }
+        if (this.isDragging === true) {
+            switch(this.whichVertexTypeActive()) {
+                case 'vertex':
+                    this.moveOrOffsetVertex(mouseX,mouseY,true);  break;
+                case 'handle':
+                    this.moveHandle(mouseX, mouseY);            break;
+            }
+            this.reconstructShape();
         }
     }
 
@@ -426,6 +467,16 @@ class Shape {
         let vertex = this.verticesArray[this.activeVertexIndex];
         let handle = vertex.handlesArray[this.activeHandleIndex];
         handle.moveHandle(x,y);
+    }
+
+
+    getPreviousVertexCoordinates() {
+        let prevVertexIndex = this.verticesArray.length - 1;
+        let prevVertex = this.verticesArray[prevVertexIndex];
+        return {
+            x: prevVertex.x,
+            y: prevVertex.y
+        }
     }
     
 }
