@@ -38,22 +38,27 @@ class Shape {
     
           case 'bezier':
             let prevVertexCoords = this.getPreviousVertexCoordinates();
-            //calculateInitialHandleCoordinates(
-            //                            x, y, 
-            //                            prevVertexCoords.x, prevVertexCoords.y);
+            let handleCoords = newVertex.calculateInitialHandleCoordinates(
+                                        x, y, 
+                                        prevVertexCoords.x, prevVertexCoords.y);
             let newVertexHandle1 = new VertexHandle( 
-                                    350, 150, 
+                                    handleCoords.handle1Coords.x, 
+                                    handleCoords.handle1Coords.y,
                                     config.handles.handle1.stroke, 
                                     config.handles.handle1.strokeWidth );
             let newVertexHandle2 = new VertexHandle( 
-                                    150, 350, 
+                                    handleCoords.handle2Coords.x, 
+                                    handleCoords.handle2Coords.y,
                                     config.handles.handle2.stroke, 
                                     config.handles.handle2.strokeWidth );
             newVertex.handlesArray.push(newVertexHandle1);
             newVertex.handlesArray.push(newVertexHandle2);
     
-            this.path.curveTo(  350, 150,   
-                                150, 350,   
+            this.path.curveTo(  
+                                handleCoords.handle1Coords.x,
+                                handleCoords.handle1Coords.y,
+                                handleCoords.handle2Coords.x,
+                                handleCoords.handle2Coords.y,
                                 newVertex.x,  newVertex.y );  break;
         }
         this.verticesArray.push(newVertex);
