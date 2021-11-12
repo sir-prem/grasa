@@ -75,8 +75,8 @@ class Vertex {
         let n = m * Math.tan(theta);
 
         
-        console.log(`m: ${m}`);
-        console.log(`n: ${n}`);
+        console.log(`m: ${Math.trunc(m)}`);
+        console.log(`n: ${Math.trunc(n)}`);
 
         let xHandle1_pos = x2 + ((n/m)*(y2 - y1));
         let yHandle1_pos = y2 + ((n/m)*(x1 - x2));
@@ -84,8 +84,8 @@ class Vertex {
         let xHandle1_neg = x2 - ((n/m)*(y2 - y1));
         let yHandle1_neg = y2 - ((n/m)*(x1 - x2));
 
-        console.log(`handle1 pos: (${xHandle1_pos}, ${yHandle1_pos})`);
-        console.log(`handle1 neg: (${xHandle1_neg}, ${yHandle1_neg})`);
+        console.log(`handle1 pos: (${Math.trunc(xHandle1_pos)}, ${Math.trunc(yHandle1_pos)})`);
+        console.log(`handle1 neg: (${Math.trunc(xHandle1_neg)}, ${Math.trunc(yHandle1_neg)})`);
         
         return {
             handle1Coords: {
@@ -97,31 +97,6 @@ class Vertex {
                 y:  yHandle1_neg
             }
         };
-        /*
-        let r = this.calculateRadius(x, y, xPrev, yPrev);
-
-        
-        let xHandle1 = r * Math.cos(theta);
-        let yHandle1 = r * Math.sin(theta);
-        
-        
-        // a = adjacent side
-        // b = opposite side
-        // c = hypotenuse
-        console.log(`xHandle1: ${xHandle1}`);
-        console.log(`yHandle1: ${yHandle1}`);
-            
-        return {
-            handle1Coords: {
-                x:  midpoint.x + xHandle1/2,
-                y:  midpoint.y - yHandle1/2
-            },
-            handle2Coords: {
-                x:  midpoint.x - xHandle1/2,
-                y:  midpoint.y + yHandle1/2
-            }
-        };
-        */
 
     }
 
@@ -159,34 +134,6 @@ class Vertex {
         };
     }
 
-    calculateRadius(x, y, xPrev, yPrev) {
-        let biggerX, biggerY, smallerX, smallerY;
-        if (xPrev > x) {
-            biggerX = xPrev;
-            smallerX = x;
-        }
-        else {
-            biggerX = x;
-            smallerX = xPrev;
-        }
-        if (yPrev > y) {
-            biggerY = yPrev;
-            smallerY = y;
-        }
-        else {
-            biggerY = y;
-            smallerY = yPrev;
-        }
-        let distanceX = biggerX - smallerX;
-        let distanceY = biggerY - smallerY;
-
-        let halfDistanceX = distanceX/2;
-        let halfDistanceY = distanceY/2;
-
-        let radius = Math.sqrt(Math.pow(halfDistanceX,2) + Math.pow(halfDistanceY,2));
-
-        return radius;
-    }
 
     toRadians (angle) {
         return angle * (Math.PI / 180);

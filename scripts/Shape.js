@@ -2,11 +2,17 @@ class Shape {
 
   constructor(fill, stroke, strokeWidth) {
     this.verticesArray = [];
-    this.fill = fill;
-    this.stroke = stroke;
-    this.strokeWidth = strokeWidth;
+
+    let scheme = {
+        fill: fill,
+        stroke: stroke,
+        strokeWidth: strokeWidth
+    }
+    this.colourScheme = new ShapeColourScheme(scheme);
+
     this.path = new g.Path();
-    this.path = g.colorize(this.path, fill, stroke, strokeWidth);
+    this.applyColourSchemeToPath();
+    
     this.clickedX = 0;
     this.clickedY = 0;
     this.closed = false;
@@ -68,8 +74,12 @@ class Shape {
         this.path.closePath();
     }
 
-    setColour(fill, stroke, strokeWidth) {
-        this.path = g.colorize(this.path, fill, stroke, strokeWidth);
+    applyColourSchemeToPath() {
+        this.path = g.colorize(
+            this.path, 
+            this.colourScheme.fill, 
+            this.colourScheme.stroke, 
+            this.colourScheme.strokeWidth);
     }
 
     // checks whether point is within (closed) shape's bounds
@@ -104,7 +114,7 @@ class Shape {
             
         }
         //this.closeShape();
-        this.setColour(this.fill, this.stroke, this.strokeWidth);
+        this.applyColourSchemeToPath();
     }
 
 
