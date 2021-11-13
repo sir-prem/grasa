@@ -20,9 +20,12 @@ function setup() {
     nextAction = 'sculpt shapeA';
 
 
-    shapeBez = new Shape('transparent', 'ivory', 3);
+    shapeBez = new Shape('steelblue', 'ivory', 3);
     shapeBez.addNewVertex( 100, 100, 'start');
     shapeBez.addNewVertex( 400, 400, 'bezier');
+    shapeBez.addNewVertex( 550, 250, 'quad');
+    shapeBez.addNewVertex( 130, 70, 'quad');
+    shapeBez.closeShape();
 
 }
 
@@ -147,11 +150,11 @@ function setupConfig() {
     handles = {
         handle1: {
             stroke:         'lightpink',
-            strokeWidth:    0.5
+            strokeWidth:    1
         },
         handle2: {
             stroke:         'tan',
-            strokeWidth:    0.5
+            strokeWidth:    1
         }
     };
 

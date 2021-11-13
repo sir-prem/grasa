@@ -33,41 +33,70 @@ class Shape {
 
     addNewVertex(x, y, type) {
         let newVertex = new Vertex(x, y, type);
+        let obj;
+        let handleCoords;
     
         switch(type) {
 
-          case 'start':
-            this.path.moveTo(newVertex.x, newVertex.y);     break;
+            case 'start':
+                this.path.moveTo(newVertex.x, newVertex.y);     break;
+        
+            case 'line':
+                this.path.lineTo(newVertex.x, newVertex.y);     break;
     
-          case 'line':
-            this.path.lineTo(newVertex.x, newVertex.y);     break;
-    
-          case 'bezier':
-            let prevVertexCoords = this.getPreviousVertexCoordinates();
-            let handleCoords = newVertex.calculateInitialHandleCoordinates(
-                                        x, y, 
-                                        prevVertexCoords.x, prevVertexCoords.y);
-            let newVertexHandle1 = new VertexHandle( 
-                                    handleCoords.handle1Coords.x, 
+            case 'bezier':
+                obj = this.calculateAndStoreVertexHandles(newVertex, x, y, 'bezier');
+                newVertex = obj.newVertex;
+                handleCoords = obj.handleCoords;
+
+                this.path.curveTo(  
+                                    handleCoords.handle1Coords.x,
                                     handleCoords.handle1Coords.y,
-                                    config.handles.handle1.stroke, 
-                                    config.handles.handle1.strokeWidth );
-            let newVertexHandle2 = new VertexHandle( 
-                                    handleCoords.handle2Coords.x, 
+                                    handleCoords.handle2Coords.x,
                                     handleCoords.handle2Coords.y,
-                                    config.handles.handle2.stroke, 
-                                    config.handles.handle2.strokeWidth );
-            newVertex.handlesArray.push(newVertexHandle1);
-            newVertex.handlesArray.push(newVertexHandle2);
-    
-            this.path.curveTo(  
-                                handleCoords.handle1Coords.x,
-                                handleCoords.handle1Coords.y,
-                                handleCoords.handle2Coords.x,
-                                handleCoords.handle2Coords.y,
-                                newVertex.x,  newVertex.y );  break;
+                                    newVertex.x,  newVertex.y );  break;
+            case 'quad':
+                obj = this.calculateAndStoreVertexHandles(newVertex, x, y, 'quad');
+                newVertex = obj.newVertex;
+                handleCoords = obj.handleCoords;
+
+                this.path.quadTo(  
+                                    handleCoords.handle1Coords.x,
+                                    handleCoords.handle1Coords.y,
+                                    newVertex.x,  newVertex.y );  break;
         }
         this.verticesArray.push(newVertex);
+    }
+
+    calculateAndStoreVertexHandles(newVertex, x, y, type) {
+        let prevVertexCoords = this.getPreviousVertexCoordinates();
+        let handleCoords = newVertex.calculateInitialHandleCoordinates(
+                                    x, y, 
+                                    prevVertexCoords.x, prevVertexCoords.y);
+        
+        // first handle
+        let newVertexHandle1 = new VertexHandle( 
+            handleCoords.handle1Coords.x, 
+            handleCoords.handle1Coords.y,
+            config.handles.handle1.stroke, 
+            config.handles.handle1.strokeWidth );
+        newVertex.handlesArray.push(newVertexHandle1);
+
+        // second handle is only required for bezier curves
+        if (type === 'bezier') {
+            let newVertexHandle2 = new VertexHandle( 
+                handleCoords.handle2Coords.x, 
+                handleCoords.handle2Coords.y,
+                config.handles.handle2.stroke, 
+                config.handles.handle2.strokeWidth );
+            newVertex.handlesArray.push(newVertexHandle2);
+        }
+
+        return {
+            newVertex: newVertex,
+            handleCoords: handleCoords
+        }
+        
     }
     
     closeShape() {
@@ -89,6 +118,7 @@ class Shape {
 
     // Reconstructs shape from moved vertices
     reconstructShape() {
+        let handle1, handle2;
         this.path = new g.Path();
         for (let i = 0; i < this.verticesArray.length; i++) {
             let vertex = this.verticesArray[i];
@@ -104,16 +134,21 @@ class Shape {
                     this.path.lineTo(x, y);         break; 
 
                 case 'bezier':
-                    let handle1 = vertex.handlesArray[0];
-                    let handle2 = vertex.handlesArray[1];
+                    handle1 = vertex.handlesArray[0];
+                    handle2 = vertex.handlesArray[1];
                     this.path.curveTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,   
                                         handle2.xDraggedPosition, handle2.yDraggedPosition,   
+                                        x,  y );  break;
+
+                case 'quad':
+                    handle1 = vertex.handlesArray[0];
+                    this.path.quadTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,  
                                         x,  y );  break;
 
             }
             
         }
-        //this.closeShape();
+        this.closeShape();
         this.applyColourSchemeToPath();
     }
 
@@ -312,15 +347,17 @@ class Shape {
             }
 
             if (vertex.hasHandles()) {
-                //assume bezier for now
                 let handleEllipsePath1 = this.getEllipsePath(vertex.handlesArray[0]);
-                let handleEllipsePath2 = this.getEllipsePath(vertex.handlesArray[1]);
                 if (handleEllipsePath1.contains(x, y)) {
                     return {bool: true, index: i, type: 'handle', handleIndex: 0};
                 }
-                else if (handleEllipsePath2.contains(x, y)) {
-                    return {bool: true, index: i, type: 'handle', handleIndex: 1};
-                }
+                // only bezier has a second handle
+                if (vertex.type === 'bezier') {
+                    let handleEllipsePath2 = this.getEllipsePath(vertex.handlesArray[1]);
+                    if (handleEllipsePath2.contains(x, y)) {
+                        return {bool: true, index: i, type: 'handle', handleIndex: 1};
+                    }
+                } 
             }
 
         }
@@ -382,7 +419,11 @@ class Shape {
                 vertex.handlesArray[0].drawVertexEllipse();
                 vertex.handlesArray[1].drawHandleLine(vertex.x, vertex.y);
                 vertex.handlesArray[1].drawCoordinates(1);
-                vertex.handlesArray[1].drawVertexEllipse();
+                vertex.handlesArray[1].drawVertexEllipse();     break;
+            case 'quad':
+                vertex.handlesArray[0].drawHandleLine(vertex.x, vertex.y);
+                vertex.handlesArray[0].drawCoordinates(0);
+                vertex.handlesArray[0].drawVertexEllipse();     break;
         }
     }
 
@@ -391,12 +432,13 @@ class Shape {
     }
 
     drawShape() {
+        this.drawPath();
         for (let i = 0; i < this.verticesArray.length; i++) {
             this.drawVertexEllipse(i);
             this.drawVertexCoordinates(i);
             this.drawVertexHandles(i);
         }
-        this.drawPath();
+        
     }
 
     //===================================================================
@@ -466,14 +508,20 @@ class Shape {
 
     dragVertexHandles(vertex) {
         vertex.handlesArray[0].dragHandle(vertex.xDraggedDistance, vertex.yDraggedDistance);
-        vertex.handlesArray[1].dragHandle(vertex.xDraggedDistance, vertex.yDraggedDistance);
+        // only bezier has a second handle
+        if (vertex.type === 'bezier') {
+            vertex.handlesArray[1].dragHandle(vertex.xDraggedDistance, vertex.yDraggedDistance);
+        }
     }
 
     dropVertexHandles(index) {
         let vertex = this.verticesArray[index];
         if (vertex.hasHandles()) {
             vertex.handlesArray[0].dropHandle();
-            vertex.handlesArray[1].dropHandle();
+            // only bezier has a second handle
+            if (vertex.type === 'bezier') {
+                vertex.handlesArray[1].dropHandle();
+            }
         }   
     }
 

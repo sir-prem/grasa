@@ -3,7 +3,7 @@ class Vertex {
     constructor(x, y, type) {
         this.x = x;
         this.y = y;
-        this.type = type; // { 'start', 'line', 'bezier', 'quadratic' }
+        this.type = type; // { 'start', 'line', 'bezier', 'quad' }
         this.vertexEllipse = new VertexEllipse( 
                             x, y,
                             config.mouseOutVertex.fill,
