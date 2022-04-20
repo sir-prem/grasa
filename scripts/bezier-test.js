@@ -43,6 +43,7 @@ function mouseMoved() {
 }
 
 function mousePressed() {
+    console.log(`mouse pressed`);
     shapeBez.mousePressOnNode(mouseX, mouseY);
 }
 

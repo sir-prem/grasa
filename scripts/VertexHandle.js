@@ -6,6 +6,10 @@ class VertexHandle {
         this.stroke = stroke;
         this.strokeWidth = strokeWidth;
         this.initialisePathAndColorize(stroke, strokeWidth);
+
+        this.mouseIsInside = false;
+        this.isActive = false;
+
         this.xDraggedPosition = x;
         this.yDraggedPosition = y;
         this.vertexEllipse = new VertexEllipse( 

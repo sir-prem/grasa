@@ -1,4 +1,4 @@
-class VertexEllipse {
+class PointMarker {
 
     constructor( x, y, fill, stroke, strokeWidth, radius ) {
         this.x = x;

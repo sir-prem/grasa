@@ -14,7 +14,7 @@ var morgan = require("morgan");
 var setUpPassport = require("./setuppassport");
 
 // path to mongo database
-var uri = "mongodb+srv://cluster0.7hvms.mongodb.net/";
+var uri = "mongodb+srv://cluster0.7hvms.mongodb.net/test";
 
 // connect to DB
 mongoose

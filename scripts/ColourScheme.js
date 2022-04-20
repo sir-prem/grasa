@@ -1,4 +1,4 @@
-class ShapeColourScheme {
+class ColourScheme {
 
     constructor(colourScheme) {
         this.fill = colourScheme.fill;
@@ -11,6 +11,15 @@ class ShapeColourScheme {
         this.fill = colourScheme.fill;
         this.stroke = colourScheme.stroke;
         this.strokeWidth = colourScheme.strokeWidth;
+    }
+
+    setToPath(path, colourScheme) {
+        path = g.colorize(
+            path, 
+            colourScheme.fill, 
+            colourScheme.stroke, 
+            colourScheme.strokeWidth);
+        return path;
     }
 
     get() {

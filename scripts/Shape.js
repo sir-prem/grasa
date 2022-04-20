@@ -22,9 +22,6 @@ class Shape {
     
   }
   
-  
-
- 
     //===================================================================
     //
     //      SHAPE FUNCTIONS - acting on shape as a whole
@@ -103,13 +100,7 @@ class Shape {
         this.path.closePath();
     }
 
-    applyColourSchemeToPath() {
-        this.path = g.colorize(
-            this.path, 
-            this.colourScheme.fill, 
-            this.colourScheme.stroke, 
-            this.colourScheme.strokeWidth);
-    }
+
 
     // checks whether point is within (closed) shape's bounds
     containsPoint(x, y) {
@@ -151,7 +142,6 @@ class Shape {
         this.closeShape();
         this.applyColourSchemeToPath();
     }
-
 
     //===================================================================
     //
@@ -255,10 +245,97 @@ class Shape {
         this.deactivateVertexOrHandle('vertex', configEventVertex);
     }
 
+    isNewOverlappingNode(mouseOverNode) {
+        //bool: true, index: i, type: 'handle', handleIndex: 1
+        if (this.hasActiveVertex() || this.hasActiveHandle()) {
+            switch(this.whichVertexTypeActive()) {
+                case 'handle':
+                    if (mouseOverNode.type !== 'handle'
+                        || mouseOverNode.handleIndex !== this.activeHandleIndex) {
+                            return true;
+                    }
+                    return false;
+                case 'vertex':
+                    if (mouseOverNode.type !== 'vertex'
+                        || mouseOverNode.index !== this.activeVertexIndex) {
+                            return true;
+                    }
+                    return false;
+            }
+        }
+    }
+
     mouseOverVertex(mouseX, mouseY) {
-        let mouseOverNode = this.isMouseOverWhichVertex(mouseX, mouseY);
+
+        // get array of nodes the mouse is over
+        let mouseOverWhichNodes = this.isMouseOverWhichNodes(mouseX, mouseY);
+        var mouseEnteringNewNode;
+
+        // if mouse is in at least one node
+        if (mouseOverWhichNodes[0].bool) {
+            console.log(`index : ${mouseOverWhichNodes[0].index}`);
+
+
+            /*
+            // set "mouse inside" flag for all relevant nodes
+            this.setMouseInsideFlag(mouseOverWhichNodes);
+
+
+            // check if mouse is entering a new node, 
+            // and if so, get node type and relevant indices
+            // 
+            //                  mouseEnteringNewNode = {
+            //                                          bool:           false,
+            //                                          type:           'undefined',
+            //                                          vertexIndex:    -1,
+            //                                          handleIndex:    -1
+            //                                       };
+            mouseEnteringNewNode = this.isMouseEnteringNewNode(mouseOverWhichNodes);
+    
+                // if so
+                if (mouseEnteringNewNode.bool) {
+
+                    // deactivate all nodes
+                    this.deactivateAllNodes();
+
+                    // activate the new node
+                    this.activateNewNode(mouseEnteringNewNode);
+
+                }
+            */
+        }
+
+        // if mouse is not in any node
+        else {
+            /*
+            // deactivate all nodes
+            this.deactivateAllNodes();
+
+            // unset "mouse inside" flag for all nodes
+            this.unsetAllMouseInsideFlags();
+            */
+        }
+        
+
+/*
+
+        let mouseOverNode = mouseOverWhichNodes[0];
+        if (mouseOverWhichNodes.length > 1) {
+            console.log(`length is: ${mouseOverWhichNodes.length}`);
+        }
+        let boolNewOverlapping;
         // mouse moving into a vertex
         if (mouseOverNode.bool) {
+
+            
+            // check if mouse is over a new overlapping node
+            if (mouseOverNodeArray.length > 1) {
+                // deactivate previous node
+                this.checkForActiveNodeAndDeactivate();
+            }
+            
+
+            // activate current (new) node
             switch(mouseOverNode.type) {
                 case 'vertex':
                     this.activateVertexOrHandle(
@@ -266,22 +343,33 @@ class Shape {
                                 -1, 
                                 'vertex', config.mouseOverVertex);      break;
                 case 'handle':
+                    if (mouseOverNode.index !== this.activeVertexIndex 
+                            || mouseOverNode.handleIndex !== this.activeHandleIndex) {
+                                this.checkForActiveNodeAndDeactivate();
+                    }
                     this.activateHandleAndItsParentVertex(
                                 mouseOverNode.index,
                                 mouseOverNode.handleIndex,
                                 config.mouseOverVertex, config.mouseOverHandle);    break;
             }
         }
+
         // mouse moving out of a vertex
+        else {
+            this.checkForActiveNodeAndDeactivate(); 
+        }
+
+        */
+    }
+
+    checkForActiveNodeAndDeactivate() {
         if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            if (mouseOverNode.bool === false) {
-                switch(this.whichVertexTypeActive()) {
-                    case 'handle':
-                        this.deactivateHandleAndItsParentVertex(
-                                config.mouseOutVertex, config.mouseOutHandle);      break;
-                    case 'vertex':
-                        this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
-                }
+            switch(this.whichVertexTypeActive()) {
+                case 'handle':
+                    this.deactivateHandleAndItsParentVertex(
+                            config.mouseOutVertex, config.mouseOutHandle);      break;
+                case 'vertex':
+                    this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
             }
         }
     }
@@ -294,10 +382,12 @@ class Shape {
                 this.setEllipseColour(
                                 this.activeVertexIndex, this.activeHandleIndex, 
                                 'handle', config.mouseClickHandle);
+                console.log(`handle clicked`); break;
             case 'vertex':
                 this.setEllipseColour(
                                 this.activeVertexIndex, -1, 
                                 'vertex', config.mouseClickVertex);
+                console.log(`vertex clicked`); break;
             default:
                 this.updateClickedPosition(mouseX, mouseY);
         }
@@ -336,32 +426,40 @@ class Shape {
         }
     }
 
-    //returns index of array pointing to which vertex the mouse is on
-    isMouseOverWhichVertex(x, y) {
+    //returns array of which nodes the mouse is over
+    isMouseOverWhichNodes(x, y) {
+        let outputArray = [];
         for (let i = 0; i < this.verticesArray.length; i++) {
             let vertex = this.verticesArray[i];
 
             let vertexEllipsePath = this.getEllipsePath(vertex);
             if (vertexEllipsePath.contains(x, y)) {
-                return {bool: true, index: i, type: 'vertex', handleIndex: -1};
+                outputArray.push(
+                    {bool: true, index: i, type: 'vertex', handleIndex: -1});
             }
 
             if (vertex.hasHandles()) {
                 let handleEllipsePath1 = this.getEllipsePath(vertex.handlesArray[0]);
                 if (handleEllipsePath1.contains(x, y)) {
-                    return {bool: true, index: i, type: 'handle', handleIndex: 0};
+                    outputArray.push(
+                        {bool: true, index: i, type: 'handle', handleIndex: 0});
                 }
                 // only bezier has a second handle
                 if (vertex.type === 'bezier') {
                     let handleEllipsePath2 = this.getEllipsePath(vertex.handlesArray[1]);
                     if (handleEllipsePath2.contains(x, y)) {
-                        return {bool: true, index: i, type: 'handle', handleIndex: 1};
+                        outputArray.push(
+                            {bool: true, index: i, type: 'handle', handleIndex: 1});
                     }
                 } 
             }
 
         }
-        return {bool: false, index: -1, type: 'undefined', handleIndex: -1};
+        if (outputArray.length === 0) {
+            outputArray.push(
+                {bool: false, index: -1, type: 'undefined', handleIndex: -1});
+        }
+        return outputArray;
     }
 
     isMouseOverActiveVertex(x, y) {
@@ -388,16 +486,11 @@ class Shape {
         return node.vertexEllipse.getPath();
     }
 
-
-
-
-
     //===================================================================
     //
     //      DRAWING FUNCTIONS
     //
     //--------------------------------------------------------------------
-
 
     // Draw circles over each vertex point for this shape
     drawVertexEllipse(i) {
@@ -525,13 +618,11 @@ class Shape {
         }   
     }
 
-
     moveHandle(x,y) {
         let vertex = this.verticesArray[this.activeVertexIndex];
         let handle = vertex.handlesArray[this.activeHandleIndex];
         handle.moveHandle(x,y);
     }
-
 
     getPreviousVertexCoordinates() {
         let prevVertexIndex = this.verticesArray.length - 1;

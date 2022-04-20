@@ -15,6 +15,8 @@ class Vertex {
         //this.handlesArray = getHandlesArray(x, y, type);
         this.handlesArray = [];
 
+        this.mouseIsInside = false;
+        this.isActive = false;
         
         this.xDraggedDistance = 0;
         this.yDraggedDistance = 0;
