@@ -1,24 +1,24 @@
-class ColourScheme {
+class GPathStyle {
 
-    constructor(colourScheme) {
-        this.fill = colourScheme.fill;
-        this.stroke = colourScheme.stroke;
-        this.strokeWidth = colourScheme.strokeWidth;
+    constructor(style) {
+        this.fill = style.fill;
+        this.stroke = style.stroke;
+        this.strokeWidth = style.strokeWidth;
     }
 
     //get and set functions here
-    set(colourScheme) {
-        this.fill = colourScheme.fill;
-        this.stroke = colourScheme.stroke;
-        this.strokeWidth = colourScheme.strokeWidth;
+    set(style) {
+        this.fill = style.fill;
+        this.stroke = style.stroke;
+        this.strokeWidth = style.strokeWidth;
     }
 
-    setToPath(path, colourScheme) {
+    set(path, style) {
         path = g.colorize(
             path, 
-            colourScheme.fill, 
-            colourScheme.stroke, 
-            colourScheme.strokeWidth);
+            style.fill, 
+            style.stroke, 
+            style.strokeWidth);
         return path;
     }
 

@@ -1,24 +1,20 @@
 class Shape {
 
   constructor(fill, stroke, strokeWidth) {
-    this.verticesArray = [];
+    this.nodesArray = [];
+    this.gPath = new g.Path();
 
-    let scheme = {
+    let style = {
         fill: fill,
         stroke: stroke,
         strokeWidth: strokeWidth
     }
-    this.colourScheme = new ShapeColourScheme(scheme);
-
-    this.path = new g.Path();
-    this.applyColourSchemeToPath();
+    this.gPathStyle = new GPathStyle(style);
+    this.gPath = GPathStyle.set(this.gPath, this.gPathStyle);
     
-    this.clickedX = 0;
-    this.clickedY = 0;
-    this.closed = false;
-    this.activeVertexIndex = -1;
-    this.activeHandleIndex = -1;
-    this.isDragging = false;
+    //this.applyColourSchemeToPath();
+    
+    this.state = new ShapeState();
     
   }
   
@@ -28,22 +24,22 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    addNewVertex(x, y, type) {
-        let newVertex = new Vertex(x, y, type);
+    addNode(mouseClickX, mouseClickY, type) {
+        let newNode = new Node(mouseClickX, mouseClickY, type);
         let obj;
         let handleCoords;
     
         switch(type) {
 
             case 'start':
-                this.path.moveTo(newVertex.x, newVertex.y);     break;
+                this.addStartPoint(newNode);     break;
         
             case 'line':
-                this.path.lineTo(newVertex.x, newVertex.y);     break;
+                this.addLineSegment(newNode);     break;
     
             case 'bezier':
-                obj = this.calculateAndStoreVertexHandles(newVertex, x, y, 'bezier');
-                newVertex = obj.newVertex;
+                obj = this.calculateAndStoreVertexHandles(newNode, x, y, 'bezier');
+                newNode = obj.newNode;
                 handleCoords = obj.handleCoords;
 
                 this.path.curveTo(  
@@ -51,50 +47,70 @@ class Shape {
                                     handleCoords.handle1Coords.y,
                                     handleCoords.handle2Coords.x,
                                     handleCoords.handle2Coords.y,
-                                    newVertex.x,  newVertex.y );  break;
+                                    newNode.x,  newNode.y );  break;
             case 'quad':
-                obj = this.calculateAndStoreVertexHandles(newVertex, x, y, 'quad');
-                newVertex = obj.newVertex;
+                obj = this.calculateAndStoreVertexHandles(newNode, x, y, 'quad');
+                newNode = obj.newNode;
                 handleCoords = obj.handleCoords;
 
                 this.path.quadTo(  
                                     handleCoords.handle1Coords.x,
                                     handleCoords.handle1Coords.y,
-                                    newVertex.x,  newVertex.y );  break;
+                                    newNode.x,  newNode.y );  break;
         }
-        this.verticesArray.push(newVertex);
+        this.verticesArray.push(newNode);
     }
 
-    calculateAndStoreVertexHandles(newVertex, x, y, type) {
-        let prevVertexCoords = this.getPreviousVertexCoordinates();
-        let handleCoords = newVertex.calculateInitialHandleCoordinates(
-                                    x, y, 
-                                    prevVertexCoords.x, prevVertexCoords.y);
-        
-        // first handle
-        let newVertexHandle1 = new VertexHandle( 
-            handleCoords.handle1Coords.x, 
-            handleCoords.handle1Coords.y,
-            config.handles.handle1.stroke, 
-            config.handles.handle1.strokeWidth );
-        newVertex.handlesArray.push(newVertexHandle1);
+        // HELPERS for addNode() function
 
-        // second handle is only required for bezier curves
-        if (type === 'bezier') {
-            let newVertexHandle2 = new VertexHandle( 
-                handleCoords.handle2Coords.x, 
-                handleCoords.handle2Coords.y,
-                config.handles.handle2.stroke, 
-                config.handles.handle2.strokeWidth );
-            newVertex.handlesArray.push(newVertexHandle2);
+        addStartPoint(newNode) {
+            this.gPath.moveTo(newNode.x, newNode.y);
         }
 
-        return {
-            newVertex: newVertex,
-            handleCoords: handleCoords
+        addLineSegment(newNode) {
+            this.gPath.lineTo(newNode.x, newNode.y);
         }
-        
-    }
+
+        calculateAndStoreVertexHandles(newVertex, x, y, type) {
+            let prevVertexCoords = this.getPreviousVertexCoordinates();
+            let handleCoords = newVertex.calculateInitialHandleCoordinates(
+                                        x, y, 
+                                        prevVertexCoords.x, prevVertexCoords.y);
+            
+            // first handle
+            let newVertexHandle1 = new VertexHandle( 
+                handleCoords.handle1Coords.x, 
+                handleCoords.handle1Coords.y,
+                config.handles.handle1.stroke, 
+                config.handles.handle1.strokeWidth );
+            newVertex.handlesArray.push(newVertexHandle1);
+
+            // second handle is only required for bezier curves
+            if (type === 'bezier') {
+                let newVertexHandle2 = new VertexHandle( 
+                    handleCoords.handle2Coords.x, 
+                    handleCoords.handle2Coords.y,
+                    config.handles.handle2.stroke, 
+                    config.handles.handle2.strokeWidth );
+                newVertex.handlesArray.push(newVertexHandle2);
+            }
+
+            return {
+                newVertex: newVertex,
+                handleCoords: handleCoords
+            }
+            
+        }
+
+            // HELPER for calculateAndStoreVertexHandles() function
+            getPreviousNodeVertexCoordinates() {
+                let prevNodeIndex = this.nodesArray.length - 1;
+                let prevNode = this.nodesArray[prevNodeIndex];
+                return {
+                    x: prevNode.vertex.x,
+                    y: prevNode.vertex.y
+                }
+            }
     
     closeShape() {
         this.path.closePath();
@@ -624,13 +640,6 @@ class Shape {
         handle.moveHandle(x,y);
     }
 
-    getPreviousVertexCoordinates() {
-        let prevVertexIndex = this.verticesArray.length - 1;
-        let prevVertex = this.verticesArray[prevVertexIndex];
-        return {
-            x: prevVertex.x,
-            y: prevVertex.y
-        }
-    }
+    
     
 }
