@@ -1,17 +1,13 @@
-class VertexHandle {
+class Handle {
 
-    constructor (x, y, stroke, strokeWidth ) {
+    constructor (x, y, handleNumber ) {
         this.x = x;
         this.y = y;
-        this.stroke = stroke;
-        this.strokeWidth = strokeWidth;
-        this.initialisePathAndColorize(stroke, strokeWidth);
 
-        this.mouseIsInside = false;
-        this.isActive = false;
+        this.number = handleNumber;
+        
+        this.initialisePathAndColorize();
 
-        this.xDraggedPosition = x;
-        this.yDraggedPosition = y;
         this.vertexEllipse = new VertexEllipse( 
                         this.xDraggedPosition, this.yDraggedPosition,
                         config.mouseOutHandle.fill,
@@ -22,14 +18,29 @@ class VertexHandle {
 
     drawHandleLine(xParentVertex, yParentVertex) {
         this.initialisePathAndColorize(this.stroke, this.strokeWidth)
-        this.handleLinePath.moveTo(xParentVertex, yParentVertex);
-        this.handleLinePath.lineTo(this.xDraggedPosition, this.yDraggedPosition);
-        this.handleLinePath.draw(drawingContext);
+        this.handleLineGPath.moveTo(xParentVertex, yParentVertex);
+        this.handleLineGPath.lineTo(this.xDraggedPosition, this.yDraggedPosition);
+        this.handleLineGPath.draw(drawingContext);
     }
 
-    initialisePathAndColorize(stroke, strokeWidth) {
-        this.handleLinePath = new g.Path();
-        this.handleLinePath = g.colorize(this.handleLinePath, 'transparent', stroke, strokeWidth);
+    initialisePathAndColorize() {
+        this.handleLineGPath = new g.Path();
+
+        switch(this.number) {
+            case(1):
+                this.handleLineGPath = g.colorize(this.handleLineGPath, 
+                                                    'transparent', 
+                                                    config.handles.handle1.stroke, 
+                                                    config.handles.handle1.strokeWidth);       
+                                                    break;
+            case(2):
+                this.handleLineGPath = g.colorize(this.handleLineGPath, 
+                                                'transparent', 
+                                                config.handles.handle2.stroke, 
+                                                config.handles.handle2.strokeWidth);       
+                                                break;
+        }
+        
     }
 
     drawCoordinates(index) {

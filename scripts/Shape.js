@@ -10,7 +10,7 @@ class Shape {
         strokeWidth: strokeWidth
     }
     this.gPathStyle = new GPathStyle(style);
-    this.gPath = GPathStyle.set(this.gPath, this.gPathStyle);
+    this.setGPathStyle();
     
     //this.applyColourSchemeToPath();
     
@@ -24,10 +24,13 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
+    setGPathStyle() {
+        this.gPath = GPathStyle.set(this.gPath, this.gPathStyle);
+    }
+
     addNode(mouseClickX, mouseClickY, type) {
         let newNode = new Node(mouseClickX, mouseClickY, type);
-        let obj;
-        let handleCoords;
+        let handleCoords = this.getHandleCoords(newNode);
     
         switch(type) {
 
@@ -38,71 +41,74 @@ class Shape {
                 this.addLineSegment(newNode);     break;
     
             case 'bezier':
-                obj = this.calculateAndStoreVertexHandles(newNode, x, y, 'bezier');
-                newNode = obj.newNode;
-                handleCoords = obj.handleCoords;
-
-                this.path.curveTo(  
-                                    handleCoords.handle1Coords.x,
-                                    handleCoords.handle1Coords.y,
-                                    handleCoords.handle2Coords.x,
-                                    handleCoords.handle2Coords.y,
-                                    newNode.x,  newNode.y );  break;
             case 'quad':
-                obj = this.calculateAndStoreVertexHandles(newNode, x, y, 'quad');
-                newNode = obj.newNode;
-                handleCoords = obj.handleCoords;
-
-                this.path.quadTo(  
-                                    handleCoords.handle1Coords.x,
-                                    handleCoords.handle1Coords.y,
-                                    newNode.x,  newNode.y );  break;
+                newNode = this.addHandlesToNode(newNode, handleCoords, type);
+                this.addBezierOrQuadSegment(newNode, handleCoords, type);   break;
         }
-        this.verticesArray.push(newNode);
+        this.nodesArray.push(newNode);
     }
 
         // HELPERS for addNode() function
 
         addStartPoint(newNode) {
-            this.gPath.moveTo(newNode.x, newNode.y);
+            this.gPath.moveTo(newNode.vertex.x, newNode.vertex.y);
         }
 
         addLineSegment(newNode) {
-            this.gPath.lineTo(newNode.x, newNode.y);
+            this.gPath.lineTo(newNode.vertex.x, newNode.vertex.y);
         }
 
-        calculateAndStoreVertexHandles(newVertex, x, y, type) {
+        addBezierOrQuadSegment(node, handleCoords, type) {
+
+            switch(type) {
+                case 'bezier':
+                    this.gPath.curveTo(  
+                        handleCoords.handle1Coords.x,
+                        handleCoords.handle1Coords.y,
+                        handleCoords.handle2Coords.x,
+                        handleCoords.handle2Coords.y,
+                        node.vertex.x,  node.vertex.y );        break;
+                case 'quad':
+                    this.gPath.quadTo(  
+                        handleCoords.handle1Coords.x,
+                        handleCoords.handle1Coords.y,
+                        node.vertex.x,  node.vertex.y );        break;
+            }
+        }
+
+        getHandleCoords(node) {
+            let currentVertex = node.vertex;
             let prevVertexCoords = this.getPreviousVertexCoordinates();
-            let handleCoords = newVertex.calculateInitialHandleCoordinates(
-                                        x, y, 
-                                        prevVertexCoords.x, prevVertexCoords.y);
+            let handleCoords = Vertex.calculateInitialHandleCoordinates(
+                                                            currentVertex.x, 
+                                                            currentVertex.y, 
+                                                            prevVertexCoords.x, 
+                                                            prevVertexCoords.y);
+            return handleCoords;
+        }
+
+        addHandlesToNode(node, handleCoords, type) {
             
             // first handle
-            let newVertexHandle1 = new VertexHandle( 
-                handleCoords.handle1Coords.x, 
-                handleCoords.handle1Coords.y,
-                config.handles.handle1.stroke, 
-                config.handles.handle1.strokeWidth );
-            newVertex.handlesArray.push(newVertexHandle1);
+            let newVertexHandle1 = new Handle( 
+                                        handleCoords.handle1Coords.x, 
+                                        handleCoords.handle1Coords.y 
+                                        );
+            node.handlesArray.push(newVertexHandle1);
 
-            // second handle is only required for bezier curves
+            // second handle - only required for bezier curves
             if (type === 'bezier') {
-                let newVertexHandle2 = new VertexHandle( 
-                    handleCoords.handle2Coords.x, 
-                    handleCoords.handle2Coords.y,
-                    config.handles.handle2.stroke, 
-                    config.handles.handle2.strokeWidth );
-                newVertex.handlesArray.push(newVertexHandle2);
+                let newVertexHandle2 = new Handle( 
+                                            handleCoords.handle2Coords.x, 
+                                            handleCoords.handle2Coords.y 
+                                            );
+                node.handlesArray.push(newVertexHandle2);
             }
 
-            return {
-                newVertex: newVertex,
-                handleCoords: handleCoords
-            }
-            
+            return node;
         }
 
-            // HELPER for calculateAndStoreVertexHandles() function
+            // HELPER for getHandleCoords() function
             getPreviousNodeVertexCoordinates() {
                 let prevNodeIndex = this.nodesArray.length - 1;
                 let prevNode = this.nodesArray[prevNodeIndex];
@@ -112,51 +118,47 @@ class Shape {
                 }
             }
     
-    closeShape() {
-        this.path.closePath();
+    closeGPath() {
+        this.gPath.closePath();
     }
 
 
 
     // checks whether point is within (closed) shape's bounds
     containsPoint(x, y) {
-        return this.path.contains(x,y);
+        return this.gPath.contains(x,y);
     }
 
     // Reconstructs shape from moved vertices
-    reconstructShape() {
-        let handle1, handle2;
-        this.path = new g.Path();
-        for (let i = 0; i < this.verticesArray.length; i++) {
-            let vertex = this.verticesArray[i];
-            let x = vertex.x;
-            let y = vertex.y;
+    recreateGPathFromNodes() {
+        
+        this.gPath = new g.Path();
+        
+        for (let i = 0; i < this.nodesArray.length; i++) {
+            let node = this.nodesArray[i];
 
-            switch(vertex.type) {
+            switch(node.type) {
 
                 case 'start':
-                    this.path.moveTo(x, y);         break;
+                    this.addStartPoint(node);         break;
 
                 case 'line':
-                    this.path.lineTo(x, y);         break; 
+                    this.addLineSegment(node);         break; 
 
                 case 'bezier':
-                    handle1 = vertex.handlesArray[0];
-                    handle2 = vertex.handlesArray[1];
-                    this.path.curveTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,   
-                                        handle2.xDraggedPosition, handle2.yDraggedPosition,   
-                                        x,  y );  break;
-
                 case 'quad':
-                    handle1 = vertex.handlesArray[0];
-                    this.path.quadTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,  
-                                        x,  y );  break;
+                    let handleCoords = this.getHandleCoords(node);
+                    this.addBezierOrQuadSegment(node, handleCoords, type);  break;
+
+                    //this.path.curveTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,   
+                    //                    handle2.xDraggedPosition, handle2.yDraggedPosition,   
+                    //                    x,  y );  break;
 
             }
             
         }
-        this.closeShape();
-        this.applyColourSchemeToPath();
+        this.closeGPath();
+        this.setGPathStyle();
     }
 
     //===================================================================

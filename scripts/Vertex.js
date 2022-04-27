@@ -1,25 +1,15 @@
 class Vertex {
 
-    constructor(x, y, type) {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.type = type; // { 'start', 'line', 'bezier', 'quad' }
-        this.vertexEllipse = new VertexEllipse( 
+        this.pointMarker = new PointMarker( 
                             x, y,
                             config.mouseOutVertex.fill,
                             config.mouseOutVertex.stroke,
                             config.mouseOutVertex.strokeWidth,
                             config.ellipseRadii.vertex );
 
-        // calculate handles
-        //this.handlesArray = getHandlesArray(x, y, type);
-        this.handlesArray = [];
-
-        this.mouseIsInside = false;
-        this.isActive = false;
-        
-        this.xDraggedDistance = 0;
-        this.yDraggedDistance = 0;
     }
 
     drawCoordinates() {
