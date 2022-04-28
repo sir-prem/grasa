@@ -21,11 +21,11 @@ function setup() {
 
 
     shapeBez = new Shape('steelblue', 'ivory', 3);
-    shapeBez.addNewVertex( 100, 100, 'start');
-    shapeBez.addNewVertex( 400, 400, 'bezier');
-    shapeBez.addNewVertex( 550, 250, 'quad');
-    shapeBez.addNewVertex( 130, 70, 'quad');
-    shapeBez.closeShape();
+    shapeBez.addNode( 100, 100, 'start');
+    shapeBez.addNode( 400, 400, 'bezier');
+    shapeBez.addNode( 550, 250, 'quad');
+    shapeBez.addNode( 130, 70, 'quad');
+    shapeBez.closeGPath();
 
 }
 
@@ -36,7 +36,7 @@ function draw() {
 }
 
 function mouseMoved() {
-    shapeBez.mouseOverVertex(mouseX, mouseY);
+    //shapeBez.mouseOverVertex(mouseX, mouseY);
 
     // prevent default
     return false;

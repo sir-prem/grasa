@@ -13,7 +13,7 @@ class GPathStyle {
         this.strokeWidth = style.strokeWidth;
     }
 
-    set(path, style) {
+    static set(path, style) {
         path = g.colorize(
             path, 
             style.fill, 

@@ -51,7 +51,7 @@ class Vertex {
         }
     }
 
-    calculateInitialHandleCoordinates(x, y, xPrev, yPrev) {
+    static calculateInitialHandleCoordinates(x, y, xPrev, yPrev) {
 
         let midpoint = this.calculateMidpoint(x, y, xPrev, yPrev);
 
@@ -92,7 +92,7 @@ class Vertex {
 
     }
 
-    calculateMidpoint(x, y, xPrev, yPrev) {
+    static calculateMidpoint(x, y, xPrev, yPrev) {
 
         let smallerX, smallerY;
         if (xPrev > x) {
@@ -127,7 +127,7 @@ class Vertex {
     }
 
 
-    toRadians (angle) {
+    static toRadians (angle) {
         return angle * (Math.PI / 180);
       }
 }

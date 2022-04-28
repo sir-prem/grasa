@@ -8,7 +8,7 @@ class Handle {
         
         this.initialisePathAndColorize();
 
-        this.vertexEllipse = new VertexEllipse( 
+        this.pointMarker = new PointMarker( 
                         this.xDraggedPosition, this.yDraggedPosition,
                         config.mouseOutHandle.fill,
                         config.mouseOutHandle.stroke,

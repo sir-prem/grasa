@@ -30,7 +30,7 @@ class Shape {
 
     addNode(mouseClickX, mouseClickY, type) {
         let newNode = new Node(mouseClickX, mouseClickY, type);
-        let handleCoords = this.getHandleCoords(newNode);
+        let handleCoords;
     
         switch(type) {
 
@@ -42,6 +42,7 @@ class Shape {
     
             case 'bezier':
             case 'quad':
+                handleCoords = this.getHandleCoords(newNode);
                 newNode = this.addHandlesToNode(newNode, handleCoords, type);
                 this.addBezierOrQuadSegment(newNode, handleCoords, type);   break;
         }
@@ -78,7 +79,7 @@ class Shape {
 
         getHandleCoords(node) {
             let currentVertex = node.vertex;
-            let prevVertexCoords = this.getPreviousVertexCoordinates();
+            let prevVertexCoords = this.getPreviousNodeVertexCoordinates();
             let handleCoords = Vertex.calculateInitialHandleCoordinates(
                                                             currentVertex.x, 
                                                             currentVertex.y, 
@@ -261,26 +262,6 @@ class Shape {
     deactivateHandleAndItsParentVertex(configEventVertex, configEventHandle) {
         this.deactivateVertexOrHandle('handle', configEventHandle);
         this.deactivateVertexOrHandle('vertex', configEventVertex);
-    }
-
-    isNewOverlappingNode(mouseOverNode) {
-        //bool: true, index: i, type: 'handle', handleIndex: 1
-        if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            switch(this.whichVertexTypeActive()) {
-                case 'handle':
-                    if (mouseOverNode.type !== 'handle'
-                        || mouseOverNode.handleIndex !== this.activeHandleIndex) {
-                            return true;
-                    }
-                    return false;
-                case 'vertex':
-                    if (mouseOverNode.type !== 'vertex'
-                        || mouseOverNode.index !== this.activeVertexIndex) {
-                            return true;
-                    }
-                    return false;
-            }
-        }
     }
 
     mouseOverVertex(mouseX, mouseY) {
@@ -510,18 +491,31 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    // Draw circles over each vertex point for this shape
-    drawVertexEllipse(i) {
-        let vertexEllipse = this.verticesArray[i].vertexEllipse;
-        vertexEllipse.draw();
+    // Draw point markers for this node's children
+    drawPointMarkers(node) {
+        let vertex = node.vertex;
+        let handle1, handle2;
+
+        vertex.pointMarker.draw();
+
+        if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
+            handle1 = node.handlesArray[0];
+            handle1.pointMarker.draw();
+        }
+
+        if (node.type === 'bezier') { // node has 2nd handle
+            handle2 = node.handlesArray[1];
+            handle2.pointMarker.draw();
+        }
+
     }
 
-    drawVertexCoordinates(i) {
-        let vertex = this.verticesArray[i];
+    drawVertexCoordinates(node) {
+        let vertex = node.vertex;
         vertex.drawCoordinates();
     }
 
-    drawVertexHandles(i) {
+    drawVertexHandles(node) {
         let vertex = this.verticesArray[i];
         switch(vertex.type) {
             case 'bezier':
@@ -538,13 +532,13 @@ class Shape {
         }
     }
 
-    drawPath() {  
-        this.path.draw(drawingContext);
+    drawGPath() {  
+        this.gPath.draw(drawingContext);
     }
 
     drawShape() {
-        this.drawPath();
-        for (let i = 0; i < this.verticesArray.length; i++) {
+        this.drawGPath();
+        for (let i = 0; i < this.nodesArray.length; i++) {
             this.drawVertexEllipse(i);
             this.drawVertexCoordinates(i);
             this.drawVertexHandles(i);
