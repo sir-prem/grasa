@@ -93,7 +93,8 @@ class Shape {
             // first handle
             let newVertexHandle1 = new Handle( 
                                         handleCoords.handle1Coords.x, 
-                                        handleCoords.handle1Coords.y 
+                                        handleCoords.handle1Coords.y,
+                                        1 
                                         );
             node.handlesArray.push(newVertexHandle1);
 
@@ -101,7 +102,8 @@ class Shape {
             if (type === 'bezier') {
                 let newVertexHandle2 = new Handle( 
                                             handleCoords.handle2Coords.x, 
-                                            handleCoords.handle2Coords.y 
+                                            handleCoords.handle2Coords.y,
+                                            2 
                                             );
                 node.handlesArray.push(newVertexHandle2);
             }
@@ -264,6 +266,28 @@ class Shape {
         this.deactivateVertexOrHandle('vertex', configEventVertex);
     }
 
+    checkForActiveNodeAndDeactivate() {
+        if (this.hasActiveVertex() || this.hasActiveHandle()) {
+            switch(this.whichVertexTypeActive()) {
+                case 'handle':
+                    this.deactivateHandleAndItsParentVertex(
+                            config.mouseOutVertex, config.mouseOutHandle);      break;
+                case 'vertex':
+                    this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
+            }
+        }
+    }
+
+    //===================================================================
+    //
+    //      MOUSE ACTIONS 
+    //          - mouse over
+    //          - mouse press
+    //          - mouse drag
+    //          - mouse release
+    //
+    //--------------------------------------------------------------------
+
     mouseOverVertex(mouseX, mouseY) {
 
         // get array of nodes the mouse is over
@@ -361,18 +385,6 @@ class Shape {
         */
     }
 
-    checkForActiveNodeAndDeactivate() {
-        if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            switch(this.whichVertexTypeActive()) {
-                case 'handle':
-                    this.deactivateHandleAndItsParentVertex(
-                            config.mouseOutVertex, config.mouseOutHandle);      break;
-                case 'vertex':
-                    this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
-            }
-        }
-    }
-
     mousePressOnNode(mouseX, mouseY) {
         switch(this.whichVertexTypeActive()) {
             case 'neither':
@@ -389,6 +401,21 @@ class Shape {
                 console.log(`vertex clicked`); break;
             default:
                 this.updateClickedPosition(mouseX, mouseY);
+        }
+    }
+
+    mouseDraggingNode(mouseX, mouseY) {
+        if (this.hasActiveVertex() || this.hasActiveHandle()) {
+            this.isDragging = true;
+        }
+        if (this.isDragging === true) {
+            switch(this.whichVertexTypeActive()) {
+                case 'vertex':
+                    this.moveOrOffsetVertex(mouseX,mouseY,true);  break;
+                case 'handle':
+                    this.moveHandle(mouseX, mouseY);            break;
+            }
+            this.reconstructShape();
         }
     }
 
@@ -410,80 +437,67 @@ class Shape {
         }
     }
 
-    mouseDraggingNode(mouseX, mouseY) {
-        if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            this.isDragging = true;
-        }
-        if (this.isDragging === true) {
-            switch(this.whichVertexTypeActive()) {
-                case 'vertex':
-                    this.moveOrOffsetVertex(mouseX,mouseY,true);  break;
-                case 'handle':
-                    this.moveHandle(mouseX, mouseY);            break;
-            }
-            this.reconstructShape();
-        }
-    }
+        // HELPERS for mouse action functions
+        
+        //returns array of which nodes the mouse is over
+        isMouseOverWhichNodes(x, y) {
+            let outputArray = [];
+            for (let i = 0; i < this.verticesArray.length; i++) {
+                let vertex = this.verticesArray[i];
 
-    //returns array of which nodes the mouse is over
-    isMouseOverWhichNodes(x, y) {
-        let outputArray = [];
-        for (let i = 0; i < this.verticesArray.length; i++) {
-            let vertex = this.verticesArray[i];
-
-            let vertexEllipsePath = this.getEllipsePath(vertex);
-            if (vertexEllipsePath.contains(x, y)) {
-                outputArray.push(
-                    {bool: true, index: i, type: 'vertex', handleIndex: -1});
-            }
-
-            if (vertex.hasHandles()) {
-                let handleEllipsePath1 = this.getEllipsePath(vertex.handlesArray[0]);
-                if (handleEllipsePath1.contains(x, y)) {
+                let vertexEllipsePath = this.getEllipsePath(vertex);
+                if (vertexEllipsePath.contains(x, y)) {
                     outputArray.push(
-                        {bool: true, index: i, type: 'handle', handleIndex: 0});
+                        {bool: true, index: i, type: 'vertex', handleIndex: -1});
                 }
-                // only bezier has a second handle
-                if (vertex.type === 'bezier') {
-                    let handleEllipsePath2 = this.getEllipsePath(vertex.handlesArray[1]);
-                    if (handleEllipsePath2.contains(x, y)) {
+
+                if (vertex.hasHandles()) {
+                    let handleEllipsePath1 = this.getEllipsePath(vertex.handlesArray[0]);
+                    if (handleEllipsePath1.contains(x, y)) {
                         outputArray.push(
-                            {bool: true, index: i, type: 'handle', handleIndex: 1});
+                            {bool: true, index: i, type: 'handle', handleIndex: 0});
                     }
-                } 
+                    // only bezier has a second handle
+                    if (vertex.type === 'bezier') {
+                        let handleEllipsePath2 = this.getEllipsePath(vertex.handlesArray[1]);
+                        if (handleEllipsePath2.contains(x, y)) {
+                            outputArray.push(
+                                {bool: true, index: i, type: 'handle', handleIndex: 1});
+                        }
+                    } 
+                }
+
             }
-
+            if (outputArray.length === 0) {
+                outputArray.push(
+                    {bool: false, index: -1, type: 'undefined', handleIndex: -1});
+            }
+            return outputArray;
         }
-        if (outputArray.length === 0) {
-            outputArray.push(
-                {bool: false, index: -1, type: 'undefined', handleIndex: -1});
-        }
-        return outputArray;
-    }
 
-    isMouseOverActiveVertex(x, y) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        let ellipsePath = this.getEllipsePath(vertex);
-        if (ellipsePath.contains(x, y)) {
-            return true;
+        isMouseOverActiveVertex(x, y) {
+            let vertex = this.verticesArray[this.activeVertexIndex];
+            let ellipsePath = this.getEllipsePath(vertex);
+            if (ellipsePath.contains(x, y)) {
+                return true;
+            }
+            return false;
         }
-        return false;
-    }
 
-    isMouseOverActiveHandle(x, y) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        let handle = vertex.handlesArray[this.activeHandleIndex];
-        let ellipsePath = this.getEllipsePath(handle);
-        if (ellipsePath.contains(x, y)) {
-            return true;
+        isMouseOverActiveHandle(x, y) {
+            let vertex = this.verticesArray[this.activeVertexIndex];
+            let handle = vertex.handlesArray[this.activeHandleIndex];
+            let ellipsePath = this.getEllipsePath(handle);
+            if (ellipsePath.contains(x, y)) {
+                return true;
+            }
+            return false;
         }
-        return false;
-    }
 
-    //get ellipse path for given vertex or handle node
-    getEllipsePath(node) {
-        return node.vertexEllipse.getPath();
-    }
+        //get ellipse path for given vertex or handle node
+        getEllipsePath(node) {
+            return node.vertexEllipse.getPath();
+        }
 
     //===================================================================
     //
@@ -491,60 +505,77 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    // Draw point markers for this node's children
-    drawPointMarkers(node) {
-        let vertex = node.vertex;
-        let handle1, handle2;
-
-        vertex.pointMarker.draw();
-
-        if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
-            handle1 = node.handlesArray[0];
-            handle1.pointMarker.draw();
-        }
-
-        if (node.type === 'bezier') { // node has 2nd handle
-            handle2 = node.handlesArray[1];
-            handle2.pointMarker.draw();
-        }
-
-    }
-
-    drawVertexCoordinates(node) {
-        let vertex = node.vertex;
-        vertex.drawCoordinates();
-    }
-
-    drawVertexHandles(node) {
-        let vertex = this.verticesArray[i];
-        switch(vertex.type) {
-            case 'bezier':
-                vertex.handlesArray[0].drawHandleLine(vertex.x, vertex.y);
-                vertex.handlesArray[0].drawCoordinates(0);
-                vertex.handlesArray[0].drawVertexEllipse();
-                vertex.handlesArray[1].drawHandleLine(vertex.x, vertex.y);
-                vertex.handlesArray[1].drawCoordinates(1);
-                vertex.handlesArray[1].drawVertexEllipse();     break;
-            case 'quad':
-                vertex.handlesArray[0].drawHandleLine(vertex.x, vertex.y);
-                vertex.handlesArray[0].drawCoordinates(0);
-                vertex.handlesArray[0].drawVertexEllipse();     break;
-        }
-    }
-
-    drawGPath() {  
-        this.gPath.draw(drawingContext);
-    }
-
     drawShape() {
+        let node; 
+        
         this.drawGPath();
+        
         for (let i = 0; i < this.nodesArray.length; i++) {
-            this.drawVertexEllipse(i);
-            this.drawVertexCoordinates(i);
-            this.drawVertexHandles(i);
+            node = this.nodesArray[i];
+            this.drawPointMarkers(node);
+            this.drawVertexCoordinates(node);
+            this.drawHandleCoordinates(node);
+            this.drawHandleLines(node);
         }
         
     }
+
+        // HELPERS for drawShape()
+
+        // Draw point markers for this node's children
+        drawPointMarkers(node) {
+            let vertex = node.vertex;
+            let handle1, handle2;
+
+            vertex.pointMarker.draw();
+
+            if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
+                handle1 = node.handlesArray[0];
+                handle1.pointMarker.draw();
+            }
+
+            if (node.type === 'bezier') { // node has 2nd handle
+                handle2 = node.handlesArray[1];
+                handle2.pointMarker.draw();
+            }
+
+        }
+
+        drawVertexCoordinates(node) {
+            let vertex = node.vertex;
+            vertex.drawCoordinates();
+        }
+
+        drawHandleCoordinates(node) {
+            switch(node.type) {
+                case 'start':
+                case 'line':
+                                break;
+                case 'bezier':
+                    node.handlesArray[0].drawCoordinates();
+                    node.handlesArray[1].drawCoordinates();     break;
+                case 'quad':
+                    node.handlesArray[0].drawCoordinates();     break;
+            }
+        }
+
+        drawHandleLines(node) {
+            switch(node.type) {
+                case 'start':
+                case 'line':
+                                break;
+                case 'bezier':
+                    node.handlesArray[0].drawHandleLine(node);
+                    node.handlesArray[1].drawHandleLine(node);     break;
+                case 'quad':
+                    node.handlesArray[0].drawHandleLine(node);     break;
+            }
+        }
+
+        drawGPath() {  
+            this.gPath.draw(drawingContext);
+        }
+    
 
     //===================================================================
     //

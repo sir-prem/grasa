@@ -9,17 +9,19 @@ class Handle {
         this.initialisePathAndColorize();
 
         this.pointMarker = new PointMarker( 
-                        this.xDraggedPosition, this.yDraggedPosition,
+                        //this.xDraggedPosition, this.yDraggedPosition,
+                        this.x, this.y,
                         config.mouseOutHandle.fill,
                         config.mouseOutHandle.stroke,
                         config.mouseOutHandle.strokeWidth,
                         config.ellipseRadii.handle );
     }
 
-    drawHandleLine(xParentVertex, yParentVertex) {
+    drawHandleLine(node) {
         this.initialisePathAndColorize(this.stroke, this.strokeWidth)
-        this.handleLineGPath.moveTo(xParentVertex, yParentVertex);
-        this.handleLineGPath.lineTo(this.xDraggedPosition, this.yDraggedPosition);
+        this.handleLineGPath.moveTo(node.vertex.x, node.vertex.y);
+        //this.handleLineGPath.lineTo(this.xDraggedPosition, this.yDraggedPosition);
+        this.handleLineGPath.lineTo(this.x, this.y);
         this.handleLineGPath.draw(drawingContext);
     }
 
@@ -43,10 +45,10 @@ class Handle {
         
     }
 
-    drawCoordinates(index) {
+    drawCoordinates() {
         textSize(14);
         fill(0, 0, 90);
-        text(`(${Math.trunc(this.xDraggedPosition)},${Math.trunc(this.yDraggedPosition)}) [H${index+1}]`, this.xDraggedPosition+2, this.yDraggedPosition);
+        text(`(${Math.trunc(this.x)},${Math.trunc(this.y)}) [H${this.number}]`, this.x+2, this.y);
     }
 
     drawVertexEllipse() {
