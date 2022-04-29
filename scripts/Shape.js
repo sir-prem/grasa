@@ -288,101 +288,51 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    mouseOverVertex(mouseX, mouseY) {
+    mouseOver(mouseX, mouseY) {
 
-        // get array of nodes the mouse is over
-        let mouseOverWhichNodes = this.isMouseOverWhichNodes(mouseX, mouseY);
-        var mouseEnteringNewNode;
+        let activeNode;
+        let activeChild;
+        let whichChildInfo;
 
-        // if mouse is in at least one node
-        if (mouseOverWhichNodes[0].bool) {
-            console.log(`index : ${mouseOverWhichNodes[0].index}`);
+        // check if any active node already
+        if (this.state.activeNodeIndex >= 0) {
 
+            activeNode = this.nodesArray[this.state.activeNodeIndex];
+            // check which child is active
+            activeChild = activeNode.state.whichChildIsActive;
 
-            /*
-            // set "mouse inside" flag for all relevant nodes
-            this.setMouseInsideFlag(mouseOverWhichNodes);
+            whichChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
 
+            // WHILE this mouse point is STILL inside the active node child
+            if (whichChildInfo.whichChild === activeChild
+                    && whichChildInfo.activeNodeIndex === this.state.activeNodeIndex) {
 
-            // check if mouse is entering a new node, 
-            // and if so, get node type and relevant indices
-            // 
-            //                  mouseEnteringNewNode = {
-            //                                          bool:           false,
-            //                                          type:           'undefined',
-            //                                          vertexIndex:    -1,
-            //                                          handleIndex:    -1
-            //                                       };
-            mouseEnteringNewNode = this.isMouseEnteringNewNode(mouseOverWhichNodes);
-    
-                // if so
-                if (mouseEnteringNewNode.bool) {
+                // do nothing (even if in a new overlapping node child)
+                return;
+            }
 
-                    // deactivate all nodes
-                    this.deactivateAllNodes();
-
-                    // activate the new node
-                    this.activateNewNode(mouseEnteringNewNode);
-
-                }
-            */
-        }
-
-        // if mouse is not in any node
-        else {
-            /*
-            // deactivate all nodes
-            this.deactivateAllNodes();
-
-            // unset "mouse inside" flag for all nodes
-            this.unsetAllMouseInsideFlags();
-            */
-        }
+            // else if this mouse point is no longer inside active child's point marker,
+            // i.e. it has just exited an active child node
+            else {
+                // deactivate the active node and it's child
+                activeNode = this.nodesArray[this.state.activeNodeIndex];
+                activeNode.deactivate();
+                this.state.setNoNodesActive();
+            }
         
-
-/*
-
-        let mouseOverNode = mouseOverWhichNodes[0];
-        if (mouseOverWhichNodes.length > 1) {
-            console.log(`length is: ${mouseOverWhichNodes.length}`);
         }
-        let boolNewOverlapping;
-        // mouse moving into a vertex
-        if (mouseOverNode.bool) {
-
-            
-            // check if mouse is over a new overlapping node
-            if (mouseOverNodeArray.length > 1) {
-                // deactivate previous node
-                this.checkForActiveNodeAndDeactivate();
-            }
-            
-
-            // activate current (new) node
-            switch(mouseOverNode.type) {
-                case 'vertex':
-                    this.activateVertexOrHandle(
-                                mouseOverNode.index, 
-                                -1, 
-                                'vertex', config.mouseOverVertex);      break;
-                case 'handle':
-                    if (mouseOverNode.index !== this.activeVertexIndex 
-                            || mouseOverNode.handleIndex !== this.activeHandleIndex) {
-                                this.checkForActiveNodeAndDeactivate();
-                    }
-                    this.activateHandleAndItsParentVertex(
-                                mouseOverNode.index,
-                                mouseOverNode.handleIndex,
-                                config.mouseOverVertex, config.mouseOverHandle);    break;
-            }
-        }
-
-        // mouse moving out of a vertex
         else {
-            this.checkForActiveNodeAndDeactivate(); 
-        }
 
-        */
+            // check if it is in any new node child
+            whichChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
+            
+                // if so, activate the new node and relevant child
+                if (whichChildInfo.whichChild !== 'none') { 
+                    this.state.setWhichNodeActive(whichChildInfo.activeNodeIndex);
+                    activeNode = this.nodesArray[whichChildInfo.activeNodeIndex];
+                    activeNode.activate(whichChildInfo);
+                }
+        }        
     }
 
     mousePressOnNode(mouseX, mouseY) {
@@ -438,66 +388,61 @@ class Shape {
     }
 
         // HELPERS for mouse action functions
-        
-        //returns array of which nodes the mouse is over
-        isMouseOverWhichNodes(x, y) {
-            let outputArray = [];
-            for (let i = 0; i < this.verticesArray.length; i++) {
-                let vertex = this.verticesArray[i];
 
-                let vertexEllipsePath = this.getEllipsePath(vertex);
-                if (vertexEllipsePath.contains(x, y)) {
-                    outputArray.push(
-                        {bool: true, index: i, type: 'vertex', handleIndex: -1});
+        //areThereAnyActiveNodes()
+
+        // RETURN OBJECT for this function:
+        //             {
+        //                  whichChild:         'vertex',       <= 'none', 'vertex', 'handle1', 'handle2'
+        //                  activeNodeIndex:     i             
+        //             }
+        insideAnyNodeChild(mouseX, mouseY) {
+
+            let node;
+
+            for (let i  = 0; i < this.nodesArray.length; i++) {
+                node = this.nodesArray[i];
+
+                //check if mouse is inside Vertex Point Marker
+                if (node.vertex.pointMarker.isInside(mouseX, mouseY)) {
+                    console.log(`inside node ${i}'s vertex`);
+                    return {
+                                whichChild: 'vertex',
+                                activeNodeIndex: i
+                            };
                 }
 
-                if (vertex.hasHandles()) {
-                    let handleEllipsePath1 = this.getEllipsePath(vertex.handlesArray[0]);
-                    if (handleEllipsePath1.contains(x, y)) {
-                        outputArray.push(
-                            {bool: true, index: i, type: 'handle', handleIndex: 0});
+                // if quad or bezier, check if mouse is inside first handle Point Marker
+                if (node.type === 'quad' || node.type === 'bezier') {
+                    if (node.handlesArray[0].pointMarker.isInside(mouseX, mouseY)) {
+                        console.log(`inside node ${i}'s handle 1`);
+                        return {
+                                    whichChild: 'handle1',
+                                    activeNodeIndex: i
+                                };
                     }
-                    // only bezier has a second handle
-                    if (vertex.type === 'bezier') {
-                        let handleEllipsePath2 = this.getEllipsePath(vertex.handlesArray[1]);
-                        if (handleEllipsePath2.contains(x, y)) {
-                            outputArray.push(
-                                {bool: true, index: i, type: 'handle', handleIndex: 1});
-                        }
-                    } 
                 }
+                
+                //if bezier, check if mouse is inside second handle Point Marker also
+                if (node.type === 'bezier') {
+                    if (node.handlesArray[1].pointMarker.isInside(mouseX, mouseY)) {
+                        console.log(`inside node ${i}'s handle 2`);
+                        return {
+                                    whichChild: 'handle2',
+                                    activeNodeIndex: i
+                                };
+                    }
+                }
+            } // end for loop
 
-            }
-            if (outputArray.length === 0) {
-                outputArray.push(
-                    {bool: false, index: -1, type: 'undefined', handleIndex: -1});
-            }
-            return outputArray;
-        }
+            // mouse is not inside any node child
+            return {
+                whichChild: 'none',
+                activeNodeIndex: -1
+            };
 
-        isMouseOverActiveVertex(x, y) {
-            let vertex = this.verticesArray[this.activeVertexIndex];
-            let ellipsePath = this.getEllipsePath(vertex);
-            if (ellipsePath.contains(x, y)) {
-                return true;
-            }
-            return false;
         }
-
-        isMouseOverActiveHandle(x, y) {
-            let vertex = this.verticesArray[this.activeVertexIndex];
-            let handle = vertex.handlesArray[this.activeHandleIndex];
-            let ellipsePath = this.getEllipsePath(handle);
-            if (ellipsePath.contains(x, y)) {
-                return true;
-            }
-            return false;
-        }
-
-        //get ellipse path for given vertex or handle node
-        getEllipsePath(node) {
-            return node.vertexEllipse.getPath();
-        }
+        
 
     //===================================================================
     //

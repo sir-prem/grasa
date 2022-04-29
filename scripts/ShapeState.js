@@ -10,4 +10,12 @@ class ShapeState {
 
     }
 
+    setWhichNodeActive(index) {
+        this.activeNodeIndex = index;
+    }
+
+    setNoNodesActive() {
+        this.activeNodeIndex = -1;
+    }
+
 }

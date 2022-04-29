@@ -20,6 +20,10 @@ class PointMarker {
         this.ellipsePath.draw(drawingContext);
     }
 
+    isInside(x, y) {
+        return this.ellipsePath.contains(x,y);
+    }
+
     updatePosition(x,y) {
         this.x = x;
         this.y = y;
@@ -40,6 +44,13 @@ class PointMarker {
         this.stroke = stroke;
         this.strokeWidth = strokeWidth;
         this.ellipsePath = g.colorize(this.ellipsePath, fill, stroke, strokeWidth);
+    }
+
+    setColour(style) {
+        this.fill = style.fill;
+        this.stroke = style.stroke;
+        this.strokeWidth = style.strokeWidth;
+        this.ellipsePath = g.colorize(this.ellipsePath, style.fill, style.stroke, style.strokeWidth);
     }
 
     getPath() {

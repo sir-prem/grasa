@@ -36,7 +36,7 @@ function draw() {
 }
 
 function mouseMoved() {
-    //shapeBez.mouseOverVertex(mouseX, mouseY);
+    shapeBez.mouseOver(mouseX, mouseY);
 
     // prevent default
     return false;
@@ -107,6 +107,24 @@ function setupConfig() {
 
     let ellipseStrokeWidth = 1;
 
+    mouseOverNode = {
+        fill:           'transparent',
+        stroke:         'lightsteelblue',
+        strokeWidth:    ellipseStrokeWidth
+    };
+
+    mouseInsideChildNode = {
+        fill:           'goldenrod',
+        stroke:         'lightsteelblue',
+        strokeWidth:    ellipseStrokeWidth
+    };
+
+    defaultNodeStyle = {
+        fill:           'transparent',
+        stroke:         'indianred',
+        strokeWidth:    ellipseStrokeWidth
+    };
+
     mouseOverVertex = {
         fill:           'goldenrod',
         stroke:         'indianred',
@@ -167,6 +185,9 @@ function setupConfig() {
 
 
     configData = {
+        mouseOverNode,
+        mouseInsideChildNode,
+        defaultNodeStyle,
         mouseOverVertex,
         mouseOutVertex,
         mouseClickVertex,
