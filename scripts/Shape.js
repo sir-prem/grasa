@@ -164,119 +164,6 @@ class Shape {
         this.setGPathStyle();
     }
 
-    //===================================================================
-    //
-    //      VERTEX FUNCTIONS - acting on the vertex
-    //
-    //--------------------------------------------------------------------
-
-    setActiveVertexIndex(index) {
-        this.activeVertexIndex = index;
-    }
-
-    setActiveHandleIndex(index) {
-        this.activeHandleIndex = index;
-    }
-
-    hasActiveVertex() {
-        if (this.activeVertexIndex >= 0) { return true; }
-        return false;
-    }
-
-    hasActiveHandle() {
-        if (this.activeHandleIndex >= 0) { return true; }
-        return false;
-    }
-
-    whichVertexTypeActive() {
-        if (this.hasActiveHandle()) {
-            return 'handle';
-        }
-        else if (this.hasActiveVertex()) {
-            return 'vertex';
-        }
-        else {
-            return 'neither';
-        }
-    }
-
-    hasNoActiveVertices() {
-        if (this.activeVertexIndex === -1 ) { return true; }
-        return false;
-    }
-
-    hasNoActiveHandles() {
-        if (this.activeHandleIndex === -1 ) { return true; }
-        return false;
-    }
-
-    setEllipseColour(vertexIndex, handleIndex, type, configEvent) {
-        let object;
-        switch(type) {
-            case 'vertex':
-                object = this.verticesArray[vertexIndex];   break;
-            case 'handle':
-                let vertex = this.verticesArray[vertexIndex];
-                object = vertex.handlesArray[handleIndex];  break;
-        }
-        object.vertexEllipse.setColour(
-            configEvent.fill, 
-            configEvent.stroke, 
-            configEvent.strokeWidth
-            );
-            
-    }
-
-    activateVertexOrHandle(vertexIndex, handleIndex, type, configEvent) {
-        switch (type) {
-            case 'vertex':
-                this.setEllipseColour(vertexIndex, -1, 'vertex', configEvent);
-                this.setActiveVertexIndex(vertexIndex);     break;
-            case 'handle':
-                this.setEllipseColour(vertexIndex, handleIndex, 'handle', configEvent);
-                this.setActiveHandleIndex(handleIndex);     break;
-        }
-    }
-
-    activateHandleAndItsParentVertex(vertexIndex, handleIndex, configEventVertex, configEventHandle) {
-        this.activateVertexOrHandle(vertexIndex, handleIndex, 'handle', configEventHandle);
-        this.activateVertexOrHandle(vertexIndex, -1, 'vertex', configEventVertex);
-    }
-
-    deactivateVertexOrHandle(type, configEvent) {
-        switch(type) {
-            case 'vertex':
-                this.setEllipseColour(
-                            this.activeVertexIndex, 
-                            -1, 
-                            'vertex', configEvent);
-                this.setActiveVertexIndex(-1);      break;
-            case 'handle':
-                this.setEllipseColour(
-                            this.activeVertexIndex, 
-                            this.activeHandleIndex,
-                            'handle', configEvent);
-                this.setActiveHandleIndex(-1);      break;
-        }
-    }
-
-    // note: must deactivate Handle before its Vertex as handle depends on vertex
-    deactivateHandleAndItsParentVertex(configEventVertex, configEventHandle) {
-        this.deactivateVertexOrHandle('handle', configEventHandle);
-        this.deactivateVertexOrHandle('vertex', configEventVertex);
-    }
-
-    checkForActiveNodeAndDeactivate() {
-        if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            switch(this.whichVertexTypeActive()) {
-                case 'handle':
-                    this.deactivateHandleAndItsParentVertex(
-                            config.mouseOutVertex, config.mouseOutHandle);      break;
-                case 'vertex':
-                    this.deactivateVertexOrHandle('vertex', config.mouseOutVertex);     break;
-            }
-        }
-    }
 
     //===================================================================
     //
@@ -290,22 +177,23 @@ class Shape {
 
     mouseOver(mouseX, mouseY) {
 
-        let activeNode;
-        let activeChild;
-        let whichChildInfo;
+        let newActiveNode;
+        let existingActiveNode;
+        let existingChild;
+        let newChildInfo;
 
-        // check if any active node already
-        if (this.state.activeNodeIndex >= 0) {
+        // check for EXISTING active node
+        if ( this.activeNodeExists() ) {
 
-            activeNode = this.nodesArray[this.state.activeNodeIndex];
+            existingActiveNode = this.getExistingActiveNode();
+
             // check which child is active
-            activeChild = activeNode.state.whichChildIsActive;
+            existingChild = existingActiveNode.state.whichChildIsActive;
 
-            whichChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
+            newChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
 
             // WHILE this mouse point is STILL inside the active node child
-            if (whichChildInfo.whichChild === activeChild
-                    && whichChildInfo.activeNodeIndex === this.state.activeNodeIndex) {
+            if ( this.mouseStillInside(newChildInfo, existingChild) ) {
 
                 // do nothing (even if in a new overlapping node child)
                 return;
@@ -315,25 +203,56 @@ class Shape {
             // i.e. it has just exited an active child node
             else {
                 // deactivate the active node and it's child
-                activeNode = this.nodesArray[this.state.activeNodeIndex];
-                activeNode.deactivate();
+                existingActiveNode = this.getExistingActiveNode();
+                existingActiveNode.deactivate();
                 this.state.setNoNodesActive();
             }
         
         }
-        else {
+        // check for NEW active node
+        else { 
 
-            // check if it is in any new node child
-            whichChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
+            newChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
             
                 // if so, activate the new node and relevant child
-                if (whichChildInfo.whichChild !== 'none') { 
-                    this.state.setWhichNodeActive(whichChildInfo.activeNodeIndex);
-                    activeNode = this.nodesArray[whichChildInfo.activeNodeIndex];
-                    activeNode.activate(whichChildInfo);
+                if (newChildInfo.whichChild !== 'none') { 
+                    this.state.setWhichNodeActive(newChildInfo.activeNodeIndex);
+                    newActiveNode = this.getNewActiveNode(newChildInfo);
+                    newActiveNode.activate(newChildInfo);
                 }
         }        
     }
+
+        // HELPERS for mouseOver()
+
+        activeNodeExists() {
+            if (this.state.activeNodeIndex >= 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        getExistingActiveNode() {
+            return this.nodesArray[this.state.activeNodeIndex];
+        }
+
+        getNewActiveNode(newChildInfo) {
+            return this.nodesArray[newChildInfo.activeNodeIndex];
+        }
+
+        mouseStillInside(newChildInfo, existingChild) {
+            if (newChildInfo.whichChild === existingChild
+                && newChildInfo.activeNodeIndex === this.state.activeNodeIndex) {
+                    return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+
 
     mousePressOnNode(mouseX, mouseY) {
         switch(this.whichVertexTypeActive()) {
