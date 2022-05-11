@@ -3,6 +3,8 @@ class Handle {
     constructor (x, y, handleNumber ) {
         this.x = x;
         this.y = y;
+        this.initialX = this.x;
+        this.initialY = this.y;
 
         this.number = handleNumber;
         
@@ -11,10 +13,27 @@ class Handle {
         this.pointMarker = new PointMarker( 
                         //this.xDraggedPosition, this.yDraggedPosition,
                         this.x, this.y,
-                        config.mouseOutHandle.fill,
-                        config.mouseOutHandle.stroke,
-                        config.mouseOutHandle.strokeWidth,
+                        config.defaultNodeStyle.fill,
+                        config.defaultNodeStyle.stroke,
+                        config.defaultNodeStyle.strokeWidth,
                         config.ellipseRadii.handle );
+    }
+
+    resetInitialPosition() {
+        this.initialX = this.x;
+        this.initialY = this.y;
+    }
+
+    offsetPosition(dx, dy) {
+        this.x = this.initialX + dx;
+        this.y = this.initialY + dy;
+        this.pointMarker.updatePosition(this.x,this.y);
+    }
+
+    moveTo(x,y) {
+        this.x = x;
+        this.y = y;
+        this.pointMarker.updatePosition(this.x,this.y);
     }
 
     drawHandleLine(node) {
@@ -61,13 +80,7 @@ class Handle {
         this.vertexEllipse.translate(this.xDraggedPosition,this.yDraggedPosition);
     }
 
-    moveHandle(x,y) {
-        this.x = x;
-        this.y = y;
-        this.xDraggedPosition = x;
-        this.yDraggedPosition = y;
-        this.vertexEllipse.translate(this.x,this.y);
-    }
+    
 
     // on mouse release, set new base position
     dropHandle() {

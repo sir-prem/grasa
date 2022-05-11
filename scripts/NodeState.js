@@ -1,18 +1,9 @@
 class NodeState {
 
     constructor() {
-
         this.isActive = false;
-
-        // whichChildIsActive can be either
-        //        [ 'none', 
-        //          'vertex', 
-        //          'handle1', 
-        //          'handle2'   ]
-        this.whichChildIsActive = 'none'; 
-
-        this.xChildDraggedDistance = 0;  //Child can be vertex or handle point 
-        this.yChildDraggedDistance = 0;  //Child can be vertex or handle point
+        this.whichChildIsActive = 'none';  // either 'none', 'vertex', 'handle1', 'handle2'
+        this.mouseState = new MouseState('node');
     }
 
 

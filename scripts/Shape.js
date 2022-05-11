@@ -24,6 +24,22 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
+    printAllNodeDetails() {
+        console.log(`******************************************`);
+        console.log(`*      SHAPE'S NODE DETAILS              *`);
+        console.log(`*                                        *`);
+
+        for (let i = 0; i < this.nodesArray.length; i++) {
+            console.log(`*----------------------------------------*`);
+            console.log(`*      Node ${i+1}`);
+            console.log(`*      -----------`);
+            this.nodesArray[i].printDetails();
+        }
+        
+        console.log(`*                                        *`);
+        console.log(`******************************************`);
+    }
+
     setGPathStyle() {
         this.gPath = GPathStyle.set(this.gPath, this.gPathStyle);
     }
@@ -133,25 +149,37 @@ class Shape {
     }
 
     // Reconstructs shape from moved vertices
-    recreateGPathFromNodes() {
-        
+    recreateGPath() {
+        let node, handleCoords;
         this.gPath = new g.Path();
+
+        //initialise handleCoords
+        handleCoords = {
+            handle1Coords: { x: 0, y: 0 },
+            handle2Coords: { x: 0, y: 0 }
+        };
+
+        console.log(`*************************************`);
+        console.log(`recreateGPath() method`);
+        console.log(``);
         
         for (let i = 0; i < this.nodesArray.length; i++) {
-            let node = this.nodesArray[i];
-
+            node = this.nodesArray[i];
+            
+            console.log(`node ${i+1}: adding ${node.type}...`);
             switch(node.type) {
 
                 case 'start':
                     this.addStartPoint(node);         break;
-
                 case 'line':
                     this.addLineSegment(node);         break; 
-
                 case 'bezier':
+                    handleCoords.handle2Coords.x = node.handlesArray[1].x;
+                    handleCoords.handle2Coords.y = node.handlesArray[1].y;
                 case 'quad':
-                    let handleCoords = this.getHandleCoords(node);
-                    this.addBezierOrQuadSegment(node, handleCoords, type);  break;
+                    handleCoords.handle1Coords.x = node.handlesArray[0].x;
+                    handleCoords.handle1Coords.y = node.handlesArray[0].y;
+                    this.addBezierOrQuadSegment(node, handleCoords, node.type);  break;
 
                     //this.path.curveTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,   
                     //                    handle2.xDraggedPosition, handle2.yDraggedPosition,   
@@ -162,6 +190,8 @@ class Shape {
         }
         this.closeGPath();
         this.setGPathStyle();
+
+        console.log(`*************************************`);
     }
 
 
@@ -177,43 +207,29 @@ class Shape {
 
     mouseOver(mouseX, mouseY) {
 
-        let newActiveNode;
-        let existingActiveNode;
-        let existingChild;
-        let newChildInfo;
+        let newChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
+        let existingActiveNode, existingActiveChild, newActiveNode;
 
         // check for EXISTING active node
         if ( this.activeNodeExists() ) {
 
             existingActiveNode = this.getExistingActiveNode();
+            existingActiveChild = existingActiveNode.state.whichChildIsActive;
 
-            // check which child is active
-            existingChild = existingActiveNode.state.whichChildIsActive;
-
-            newChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
-
-            // WHILE this mouse point is STILL inside the active node child
-            if ( this.mouseStillInside(newChildInfo, existingChild) ) {
-
+            // WHILE mouse point is STILL inside EXISTING active node child
+            if ( this.mouseStillInside(newChildInfo, existingActiveChild) ) {
                 // do nothing (even if in a new overlapping node child)
-                return;
+                return;     
             }
-
-            // else if this mouse point is no longer inside active child's point marker,
-            // i.e. it has just exited an active child node
+            // WHEN mouse point is JUST exiting the EXISTING active node child
             else {
                 // deactivate the active node and it's child
-                existingActiveNode = this.getExistingActiveNode();
                 existingActiveNode.deactivate();
                 this.state.setNoNodesActive();
             }
-        
         }
         // check for NEW active node
         else { 
-
-            newChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
-            
                 // if so, activate the new node and relevant child
                 if (newChildInfo.whichChild !== 'none') { 
                     this.state.setWhichNodeActive(newChildInfo.activeNodeIndex);
@@ -242,8 +258,8 @@ class Shape {
             return this.nodesArray[newChildInfo.activeNodeIndex];
         }
 
-        mouseStillInside(newChildInfo, existingChild) {
-            if (newChildInfo.whichChild === existingChild
+        mouseStillInside(newChildInfo, existingActiveChild) {
+            if (newChildInfo.whichChild === existingActiveChild
                 && newChildInfo.activeNodeIndex === this.state.activeNodeIndex) {
                     return true;
             }
@@ -254,26 +270,34 @@ class Shape {
 
 
 
-    mousePressOnNode(mouseX, mouseY) {
-        switch(this.whichVertexTypeActive()) {
-            case 'neither':
-                break;  //do nothing
-            case 'handle':
-                this.setEllipseColour(
-                                this.activeVertexIndex, this.activeHandleIndex, 
-                                'handle', config.mouseClickHandle);
-                console.log(`handle clicked`); break;
-            case 'vertex':
-                this.setEllipseColour(
-                                this.activeVertexIndex, -1, 
-                                'vertex', config.mouseClickVertex);
-                console.log(`vertex clicked`); break;
-            default:
-                this.updateClickedPosition(mouseX, mouseY);
+    mousePress(mouseX, mouseY) {
+
+        let existingActiveNode;
+
+        // check for EXISTING active node
+        if ( this.activeNodeExists() ) {
+            existingActiveNode = this.getExistingActiveNode();
+            existingActiveNode.setStyleMouseClick();
+            existingActiveNode.state.mouseState.clickedPoint.set(mouseX,mouseY);
+            this.printAllNodeDetails();
+        }
+        else { // mouse clicked in empty space
+            return; // do nothing
         }
     }
 
-    mouseDraggingNode(mouseX, mouseY) {
+    mouseDrag(mouseX, mouseY) {
+
+        let existingActiveNode;
+
+        // check for EXISTING active node
+        if ( this.activeNodeExists() ) {
+            existingActiveNode = this.getExistingActiveNode();
+            existingActiveNode.drag(mouseX, mouseY);
+            //this.nodesArray.splice(this.state.activeNodeIndex, 1, existingActiveNode); //update nodesArray
+            this.recreateGPath();
+        }
+        /*
         if (this.hasActiveVertex() || this.hasActiveHandle()) {
             this.isDragging = true;
         }
@@ -286,24 +310,31 @@ class Shape {
             }
             this.reconstructShape();
         }
+        */
     }
 
-    mouseReleasedOnNode() {
-        switch(this.whichVertexTypeActive()) {
-            case 'handle':
-                this.setEllipseColour(
-                                this.activeVertexIndex, this.activeHandleIndex, 
-                                'handle', config.mouseOverHandle);
-            case 'vertex':
-                this.setEllipseColour(
-                                this.activeVertexIndex, -1, 
-                                'vertex', config.mouseOverVertex);
-                // if vertex or handle was being dragged
-                if (this.isDragging === true) {     
-                    this.dropVertexHandles(this.activeVertexIndex);
-                    this.isDragging = false;
-                }       break;
+    mouseRelease() {
+
+        let existingActiveNode;
+
+        // check for EXISTING active node
+        if ( this.activeNodeExists() ) {
+            existingActiveNode = this.getExistingActiveNode();
+            existingActiveNode.setStyleMouseOver();
+            existingActiveNode.dragRelease();
+            this.printAllNodeDetails();
         }
+        else { // mouse released in empty space
+            return; // do nothing
+        }
+
+
+                // if vertex or handle was being dragged
+                //if (this.isDragging === true) {     
+                    //this.dropVertexHandles(this.activeVertexIndex);
+                    //this.isDragging = false;
+                //}       break;
+        
     }
 
         // HELPERS for mouse action functions
@@ -481,6 +512,10 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
+    dragNode(mouseX, mouseY, node) {
+
+    }
+    
     moveOrOffsetVertex(x,y,isMove) {
         let vertex = this.verticesArray[this.activeVertexIndex];
         if(isMove) {

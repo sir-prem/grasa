@@ -8,12 +8,25 @@ class PointMarker {
         this.strokeWidth = strokeWidth;
         this.radius = radius;
         this.diameter = radius*2;
+        this.createGPath(x, y);
+        this.styleGPath();
+        
+    }
+
+    createGPath(x, y) {
         this.ellipsePath = new g.Path();
 
         this.ellipsePath.addEllipse(x-this.radius, y-this.radius, 
                                 this.diameter, this.diameter);
+    }
 
-        this.ellipsePath = g.colorize(this.ellipsePath, fill, stroke, strokeWidth);
+    styleGPath() {
+        this.ellipsePath = g.colorize(this.ellipsePath, this.fill, this.stroke, this.strokeWidth);
+    }
+
+    createAndRestyleGPath(x, y) {
+        this.createGPath(x, y);
+        this.styleGPath();
     }
 
     draw() {
@@ -24,11 +37,10 @@ class PointMarker {
         return this.ellipsePath.contains(x,y);
     }
 
-    updatePosition(x,y) {
-        this.x = x;
-        this.y = y;
+    updatePosition(newX,newY) {
+        this.createAndRestyleGPath(newX, newY);
     }
-
+/*
     translate(x,y) {
         this.x = x;
         this.y = y;
@@ -38,12 +50,12 @@ class PointMarker {
                                 this.diameter, this.diameter);
         this.setColour(this.fill, this.stroke, this.strokeWidth);
     }
-
+*/
     setColour(fill, stroke, strokeWidth) {
         this.fill = fill;
         this.stroke = stroke;
         this.strokeWidth = strokeWidth;
-        this.ellipsePath = g.colorize(this.ellipsePath, fill, stroke, strokeWidth);
+        this.styleGPath();
     }
 
     setColour(style) {

@@ -5,9 +5,9 @@ class Vertex {
         this.y = y;
         this.pointMarker = new PointMarker( 
                             x, y,
-                            config.mouseOutVertex.fill,
-                            config.mouseOutVertex.stroke,
-                            config.mouseOutVertex.strokeWidth,
+                            config.defaultNodeStyle.fill,
+                            config.defaultNodeStyle.stroke,
+                            config.defaultNodeStyle.strokeWidth,
                             config.ellipseRadii.vertex );
 
     }
@@ -18,9 +18,26 @@ class Vertex {
         text(`(${Math.trunc(this.x)},${Math.trunc(this.y)})`, this.x+2, this.y);
     }
 
-    moveToNewPosition(x, y) {
+    moveTo(x, y, node) {
         this.x = x;
         this.y = y;
+        this.pointMarker.updatePosition(x,y);
+
+        //move handles if required
+        switch(node.type) {
+            case 'bezier':  // for 'bezier' only
+                console.log(`Vertex moveTo() > case bezier: mouseDraggedDist is (${node.state.mouseState.draggedDistance.dx},${node.state.mouseState.draggedDistance.dy})`);
+                node.handlesArray[1].offsetPosition(
+                                            node.state.mouseState.draggedDistance.dx,
+                                            node.state.mouseState.draggedDistance.dy
+                                        );
+            case 'quad': // for 'quad' and 'bezier'
+                console.log(`Vertex moveTo() > case quad: mouseDraggedDist is (${node.state.mouseState.draggedDistance.dx},${node.state.mouseState.draggedDistance.dy})`);
+                node.handlesArray[0].offsetPosition(
+                                            node.state.mouseState.draggedDistance.dx,
+                                            node.state.mouseState.draggedDistance.dy
+                                        );      break;
+        }
     }
 
     offsetPosition(dx, dy) {
@@ -52,6 +69,7 @@ class Vertex {
     }
 
     static calculateInitialHandleCoordinates(x, y, xPrev, yPrev) {
+        
 
         let midpoint = this.calculateMidpoint(x, y, xPrev, yPrev);
 

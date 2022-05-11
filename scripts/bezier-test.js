@@ -19,12 +19,19 @@ function setup() {
     mode = 'SCULPT';
     nextAction = 'sculpt shapeA';
 
-
+/*
     shapeBez = new Shape('steelblue', 'ivory', 3);
     shapeBez.addNode( 100, 100, 'start');
     shapeBez.addNode( 400, 400, 'bezier');
     shapeBez.addNode( 550, 250, 'quad');
     shapeBez.addNode( 130, 70, 'quad');
+    shapeBez.closeGPath();
+    
+*/
+    shapeBez = new Shape('thistle', 'lightseagreen', 6);
+    shapeBez.addNode( 300, 100, 'start');
+    shapeBez.addNode( 100, 400, 'bezier');
+    shapeBez.addNode( 500, 400, 'line');
     shapeBez.closeGPath();
 
 }
@@ -44,16 +51,19 @@ function mouseMoved() {
 
 function mousePressed() {
     console.log(`mouse pressed`);
-    shapeBez.mousePressOnNode(mouseX, mouseY);
-}
-
-function mouseReleased() {
-    shapeBez.mouseReleasedOnNode();
+    shapeBez.mousePress(mouseX, mouseY);
 }
 
 function mouseDragged() {
-    shapeBez.mouseDraggingNode(mouseX, mouseY);
+    console.log(`mouse dragged`);
+    shapeBez.mouseDrag(mouseX, mouseY);
 }
+
+function mouseReleased() {
+    console.log(`mouse released`);
+    shapeBez.mouseRelease();
+}
+
 
 
 function keyPressed() {
@@ -114,6 +124,12 @@ function setupConfig() {
     };
 
     mouseInsideChildNode = {
+        fill:           'lightsteelblue',
+        stroke:         'lightsteelblue',
+        strokeWidth:    ellipseStrokeWidth
+    };
+
+    mouseClickChildNode = {
         fill:           'goldenrod',
         stroke:         'lightsteelblue',
         strokeWidth:    ellipseStrokeWidth
@@ -187,6 +203,7 @@ function setupConfig() {
     configData = {
         mouseOverNode,
         mouseInsideChildNode,
+        mouseClickChildNode,
         defaultNodeStyle,
         mouseOverVertex,
         mouseOutVertex,
