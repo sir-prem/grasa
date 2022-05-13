@@ -11,8 +11,6 @@ class Node {
 
     }
 
-
-
     activate(whichChildInfo) {
         this.state.setActive();
         this.state.setChildActive(whichChildInfo.whichChild);
@@ -136,20 +134,6 @@ class Node {
         }
 
     }
-/*
-    let vertex = this.verticesArray[this.activeVertexIndex];
-        if(isMove) {
-            vertex.moveToNewPosition(x,y);
-        } else { 
-            vertex.offsetPosition(x,y);
-        }
-        this.translateVertexEllipse(vertex);
-        let distance = this.getMouseDraggedDistance(x, y);
-        vertex.updateDraggedDistance(distance.x, distance.y);
-        if (vertex.hasHandles()) {
-            this.dragVertexHandles(vertex);
-        }
-        */
     
     printDetails() {
         console.log(`*      Is Active:          ${this.state.isActive}`);
@@ -165,6 +149,9 @@ class Node {
         }
     }
 
+    drawCoordinates(childType, child) {
+        
+    }
     // methods
     // getWhichChildIsActive
     // howManyChildren

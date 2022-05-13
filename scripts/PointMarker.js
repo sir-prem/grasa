@@ -40,17 +40,7 @@ class PointMarker {
     updatePosition(newX,newY) {
         this.createAndRestyleGPath(newX, newY);
     }
-/*
-    translate(x,y) {
-        this.x = x;
-        this.y = y;
-        this.ellipsePath = new g.Path();
 
-        this.ellipsePath.addEllipse(x-this.radius, y-this.radius, 
-                                this.diameter, this.diameter);
-        this.setColour(this.fill, this.stroke, this.strokeWidth);
-    }
-*/
     setColour(fill, stroke, strokeWidth) {
         this.fill = fill;
         this.stroke = stroke;

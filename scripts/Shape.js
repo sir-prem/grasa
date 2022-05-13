@@ -158,15 +158,10 @@ class Shape {
             handle1Coords: { x: 0, y: 0 },
             handle2Coords: { x: 0, y: 0 }
         };
-
-        console.log(`*************************************`);
-        console.log(`recreateGPath() method`);
-        console.log(``);
         
         for (let i = 0; i < this.nodesArray.length; i++) {
             node = this.nodesArray[i];
             
-            console.log(`node ${i+1}: adding ${node.type}...`);
             switch(node.type) {
 
                 case 'start':
@@ -181,17 +176,11 @@ class Shape {
                     handleCoords.handle1Coords.y = node.handlesArray[0].y;
                     this.addBezierOrQuadSegment(node, handleCoords, node.type);  break;
 
-                    //this.path.curveTo(  handle1.xDraggedPosition, handle1.yDraggedPosition,   
-                    //                    handle2.xDraggedPosition, handle2.yDraggedPosition,   
-                    //                    x,  y );  break;
-
             }
             
         }
         this.closeGPath();
         this.setGPathStyle();
-
-        console.log(`*************************************`);
     }
 
 
@@ -297,20 +286,6 @@ class Shape {
             //this.nodesArray.splice(this.state.activeNodeIndex, 1, existingActiveNode); //update nodesArray
             this.recreateGPath();
         }
-        /*
-        if (this.hasActiveVertex() || this.hasActiveHandle()) {
-            this.isDragging = true;
-        }
-        if (this.isDragging === true) {
-            switch(this.whichVertexTypeActive()) {
-                case 'vertex':
-                    this.moveOrOffsetVertex(mouseX,mouseY,true);  break;
-                case 'handle':
-                    this.moveHandle(mouseX, mouseY);            break;
-            }
-            this.reconstructShape();
-        }
-        */
     }
 
     mouseRelease() {
@@ -327,13 +302,6 @@ class Shape {
         else { // mouse released in empty space
             return; // do nothing
         }
-
-
-                // if vertex or handle was being dragged
-                //if (this.isDragging === true) {     
-                    //this.dropVertexHandles(this.activeVertexIndex);
-                    //this.isDragging = false;
-                //}       break;
         
     }
 
@@ -400,77 +368,19 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    drawShape() {
+    draw() {
         let node; 
-        
-        this.drawGPath();
-        
-        for (let i = 0; i < this.nodesArray.length; i++) {
+        let draw = new Draw();
+
+        draw.drawShape(this);
+
+        for (let i = 0; i < this.nodesArray.length; i++ ) {
             node = this.nodesArray[i];
-            this.drawPointMarkers(node);
-            this.drawVertexCoordinates(node);
-            this.drawHandleCoordinates(node);
-            this.drawHandleLines(node);
+            draw.markUpNode(node);
         }
         
-    }
-
-        // HELPERS for drawShape()
-
-        // Draw point markers for this node's children
-        drawPointMarkers(node) {
-            let vertex = node.vertex;
-            let handle1, handle2;
-
-            vertex.pointMarker.draw();
-
-            if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
-                handle1 = node.handlesArray[0];
-                handle1.pointMarker.draw();
-            }
-
-            if (node.type === 'bezier') { // node has 2nd handle
-                handle2 = node.handlesArray[1];
-                handle2.pointMarker.draw();
-            }
-
-        }
-
-        drawVertexCoordinates(node) {
-            let vertex = node.vertex;
-            vertex.drawCoordinates();
-        }
-
-        drawHandleCoordinates(node) {
-            switch(node.type) {
-                case 'start':
-                case 'line':
-                                break;
-                case 'bezier':
-                    node.handlesArray[0].drawCoordinates();
-                    node.handlesArray[1].drawCoordinates();     break;
-                case 'quad':
-                    node.handlesArray[0].drawCoordinates();     break;
-            }
-        }
-
-        drawHandleLines(node) {
-            switch(node.type) {
-                case 'start':
-                case 'line':
-                                break;
-                case 'bezier':
-                    node.handlesArray[0].drawHandleLine(node);
-                    node.handlesArray[1].drawHandleLine(node);     break;
-                case 'quad':
-                    node.handlesArray[0].drawHandleLine(node);     break;
-            }
-        }
-
-        drawGPath() {  
-            this.gPath.draw(drawingContext);
-        }
-    
+        
+    } 
 
     //===================================================================
     //

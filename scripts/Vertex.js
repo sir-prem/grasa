@@ -12,12 +12,6 @@ class Vertex {
 
     }
 
-    drawCoordinates() {
-        textSize(14);
-        fill(0, 0, 90);
-        text(`(${Math.trunc(this.x)},${Math.trunc(this.y)})`, this.x+2, this.y);
-    }
-
     moveTo(x, y, node) {
         this.x = x;
         this.y = y;
@@ -51,21 +45,6 @@ class Vertex {
 
     setVertexToStationary() {
         this.isDragging = false;
-    }
-
-    updateDraggedDistance(dx, dy) {
-        this.xDraggedDistance = dx;
-        this.yDraggedDistance = dy;
-    }
-
-    hasHandles() {
-        switch (this.type) {
-            case 'start':
-            case 'line':
-                return false;
-            default:
-                return true;
-        }
     }
 
     static calculateInitialHandleCoordinates(x, y, xPrev, yPrev) {
@@ -144,8 +123,8 @@ class Vertex {
         };
     }
 
-
     static toRadians (angle) {
         return angle * (Math.PI / 180);
-      }
+    }
+
 }

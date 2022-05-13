@@ -28,22 +28,35 @@ function setup() {
     shapeBez.closeGPath();
     
 */
-    shapeBez = new Shape('thistle', 'lightseagreen', 6);
-    shapeBez.addNode( 300, 100, 'start');
-    shapeBez.addNode( 100, 400, 'bezier');
-    shapeBez.addNode( 500, 400, 'line');
-    shapeBez.closeGPath();
+
+    shape1 = new Shape('thistle', 'lightseagreen', 6);
+    shape1.addNode( 400, 150, 'start');
+    shape1.addNode( 200, 350, 'line');
+    shape1.addNode( 600, 350, 'line');
+    shape1.closeGPath();
+
+    shape2 = new Shape('steelblue', 'ivory', 3);
+    shape2.addNode( 300, 100, 'start');
+    shape2.addNode( 100, 400, 'bezier');
+    shape2.addNode( 500, 400, 'line');
+    shape2.closeGPath();
+
+    
 
 }
 
 function draw() { 
     drawBackground();
-    shapeBez.drawShape(); 
+    shape1.draw(); 
+    shape2.draw(); 
+    intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
+    intersectShape.draw();
     textStuff(); 
 }
 
 function mouseMoved() {
-    shapeBez.mouseOver(mouseX, mouseY);
+    shape1.mouseOver(mouseX, mouseY);
+    shape2.mouseOver(mouseX, mouseY);
 
     // prevent default
     return false;
@@ -51,17 +64,20 @@ function mouseMoved() {
 
 function mousePressed() {
     console.log(`mouse pressed`);
-    shapeBez.mousePress(mouseX, mouseY);
+    shape1.mousePress(mouseX, mouseY);
+    shape2.mousePress(mouseX, mouseY);
 }
 
 function mouseDragged() {
     console.log(`mouse dragged`);
-    shapeBez.mouseDrag(mouseX, mouseY);
+    shape1.mouseDrag(mouseX, mouseY);
+    shape2.mouseDrag(mouseX, mouseY);
 }
 
 function mouseReleased() {
     console.log(`mouse released`);
-    shapeBez.mouseRelease();
+    shape1.mouseRelease();
+    shape2.mouseRelease();
 }
 
 

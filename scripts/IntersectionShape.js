@@ -1,8 +1,8 @@
 class IntersectionShape {
 
     constructor(shapeA, shapeB, fill, stroke, strokeWidth) {
-        let pathA = shapeA.path;
-        let pathB = shapeB.path;
+        let pathA = shapeA.gPath;
+        let pathB = shapeB.gPath;
         this.fill = fill;
         this.stroke = stroke;
         this.strokeWidth = strokeWidth;
@@ -10,7 +10,7 @@ class IntersectionShape {
         this.path = g.colorize(this.path, fill, stroke, strokeWidth);
     }
 
-    drawPath() {
+    draw() {
         this.path.draw(drawingContext);
     }
 
