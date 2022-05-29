@@ -11,9 +11,9 @@ class Node {
 
     }
 
-    activate(whichChildInfo) {
+    activate(whichChild) {
         this.state.setActive();
-        this.state.setChildActive(whichChildInfo.whichChild);
+        this.state.setChildActive(whichChild);
 
         this.setStyleMouseOver();
         

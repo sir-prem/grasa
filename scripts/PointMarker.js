@@ -10,6 +10,7 @@ class PointMarker {
         this.diameter = radius*2;
         this.createGPath(x, y);
         this.styleGPath();
+        this.isMouseStillInside = false;
         
     }
 
@@ -33,8 +34,8 @@ class PointMarker {
         this.ellipsePath.draw(drawingContext);
     }
 
-    isInside(x, y) {
-        return this.ellipsePath.contains(x,y);
+    isMouseInside() {
+        return this.ellipsePath.contains(mouseX, mouseY);
     }
 
     updatePosition(newX,newY) {
@@ -53,6 +54,18 @@ class PointMarker {
         this.stroke = style.stroke;
         this.strokeWidth = style.strokeWidth;
         this.ellipsePath = g.colorize(this.ellipsePath, style.fill, style.stroke, style.strokeWidth);
+    }
+
+    setMouseEntered() {
+        this.isMouseStillInside = true;
+    }
+
+    setMouseExited() {
+        this.isMouseStillInside = false;
+    }
+
+    isMouseAlreadyInside() {
+        return this.isMouseStillInside;
     }
 
     getPath() {

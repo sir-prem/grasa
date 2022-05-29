@@ -194,38 +194,11 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    mouseOver(mouseX, mouseY) {
+    mouseOver() {
 
-        let newChildInfo = this.insideAnyNodeChild(mouseX, mouseY);
-        let existingActiveNode, existingActiveChild, newActiveNode;
-
-        // check for EXISTING active node
-        if ( this.activeNodeExists() ) {
-
-            existingActiveNode = this.getExistingActiveNode();
-            existingActiveChild = existingActiveNode.state.whichChildIsActive;
-
-            // WHILE mouse point is STILL inside EXISTING active node child
-            if ( this.mouseStillInside(newChildInfo, existingActiveChild) ) {
-                // do nothing (even if in a new overlapping node child)
-                return;     
-            }
-            // WHEN mouse point is JUST exiting the EXISTING active node child
-            else {
-                // deactivate the active node and it's child
-                existingActiveNode.deactivate();
-                this.state.setNoNodesActive();
-            }
-        }
-        // check for NEW active node
-        else { 
-                // if so, activate the new node and relevant child
-                if (newChildInfo.whichChild !== 'none') { 
-                    this.state.setWhichNodeActive(newChildInfo.activeNodeIndex);
-                    newActiveNode = this.getNewActiveNode(newChildInfo);
-                    newActiveNode.activate(newChildInfo);
-                }
-        }        
+        this.setMouseInsidePointMarkers();
+        this.overlapHandler();
+        
     }
 
         // HELPERS for mouseOver()
@@ -241,20 +214,6 @@ class Shape {
 
         getExistingActiveNode() {
             return this.nodesArray[this.state.activeNodeIndex];
-        }
-
-        getNewActiveNode(newChildInfo) {
-            return this.nodesArray[newChildInfo.activeNodeIndex];
-        }
-
-        mouseStillInside(newChildInfo, existingActiveChild) {
-            if (newChildInfo.whichChild === existingActiveChild
-                && newChildInfo.activeNodeIndex === this.state.activeNodeIndex) {
-                    return true;
-            }
-            else {
-                return false;
-            }
         }
 
 
@@ -283,7 +242,6 @@ class Shape {
         if ( this.activeNodeExists() ) {
             existingActiveNode = this.getExistingActiveNode();
             existingActiveNode.drag(mouseX, mouseY);
-            //this.nodesArray.splice(this.state.activeNodeIndex, 1, existingActiveNode); //update nodesArray
             this.recreateGPath();
         }
     }
@@ -307,59 +265,82 @@ class Shape {
 
         // HELPERS for mouse action functions
 
-        //areThereAnyActiveNodes()
-
-        // RETURN OBJECT for this function:
-        //             {
-        //                  whichChild:         'vertex',       <= 'none', 'vertex', 'handle1', 'handle2'
-        //                  activeNodeIndex:     i             
-        //             }
-        insideAnyNodeChild(mouseX, mouseY) {
+        setMouseInsidePointMarkers() {
 
             let node;
 
             for (let i  = 0; i < this.nodesArray.length; i++) {
                 node = this.nodesArray[i];
 
-                //check if mouse is inside Vertex Point Marker
-                if (node.vertex.pointMarker.isInside(mouseX, mouseY)) {
-                    console.log(`inside node ${i}'s vertex`);
-                    return {
-                                whichChild: 'vertex',
-                                activeNodeIndex: i
-                            };
-                }
+                // check mouse inside VERTEX
+                this.setMouseInsideChildPointMarker(node, node.vertex, 'vertex', i);
 
-                // if quad or bezier, check if mouse is inside first handle Point Marker
+                // check mouse inside HANDLE 1
                 if (node.type === 'quad' || node.type === 'bezier') {
-                    if (node.handlesArray[0].pointMarker.isInside(mouseX, mouseY)) {
-                        console.log(`inside node ${i}'s handle 1`);
-                        return {
-                                    whichChild: 'handle1',
-                                    activeNodeIndex: i
-                                };
-                    }
+                    this.setMouseInsideChildPointMarker(node, node.handlesArray[0], 'handle1', i);
                 }
                 
-                //if bezier, check if mouse is inside second handle Point Marker also
+                // check mouse inside HANDLE 2
                 if (node.type === 'bezier') {
-                    if (node.handlesArray[1].pointMarker.isInside(mouseX, mouseY)) {
-                        console.log(`inside node ${i}'s handle 2`);
-                        return {
-                                    whichChild: 'handle2',
-                                    activeNodeIndex: i
-                                };
-                    }
+                    this.setMouseInsideChildPointMarker(node, node.handlesArray[1], 'handle2', i);
                 }
             } // end for loop
 
-            // mouse is not inside any node child
-            return {
-                whichChild: 'none',
-                activeNodeIndex: -1
-            };
-
         }
+
+
+        setMouseInsideChildPointMarker(node, child, type, nodeIndex) {
+
+            if (child.pointMarker.isMouseInside()) {
+                if (child.pointMarker.isMouseAlreadyInside()) {
+                    console.log(`inside node ${nodeIndex}'s ${type}`);
+                }
+                else { // mouse just entering
+                    console.log(`entering node ${nodeIndex}'s ${type}`);
+                    child.pointMarker.setMouseEntered();
+                    this.state.mouseInsideHowManyPointMarkers++;
+                }
+                //activate when there is no overlap
+                if (this.state.mouseInsideHowManyPointMarkers == 1) {
+                    this.state.setWhichNodeActive(nodeIndex);
+                    node.activate(type);
+                }
+            }
+            else {
+                // mouse is exiting the point marker
+                if (child.pointMarker.isMouseAlreadyInside()) {
+                    console.log(`exiting node ${nodeIndex}'s ${type}`);
+                    child.pointMarker.setMouseExited();
+                    this.state.mouseInsideHowManyPointMarkers--;
+                    if (this.state.mouseInsideHowManyPointMarkers == 0) {
+                        this.state.setWhichNodeActive(-1);
+                        node.deactivate();
+                    }
+                }
+            }
+
+            
+        }
+
+        overlapHandler() {
+            console.log(`count is: ${this.state.mouseInsideHowManyPointMarkers}`);
+            // going into an overlap
+            if(this.state.mouseInsideHowManyPointMarkers > 1) {
+                console.log(`overlapHandler: activeNodeIndex is ${this.state.activeNodeIndex}`);
+                this.deactivateExistingNode();
+            }
+        }
+
+            // helper for overlapHandler()
+            deactivateExistingNode() {
+                //deactivate existing node 
+                if (this.state.activeNodeIndex !== -1) {
+                    this.getExistingActiveNode().deactivate();
+                    this.state.setWhichNodeActive(-1);
+                }
+            }
+
+
         
 
     //===================================================================
@@ -369,18 +350,19 @@ class Shape {
     //--------------------------------------------------------------------
 
     draw() {
+        let draw = new Draw();
+        draw.drawShape(this);
+    }
+
+    drawMarkUp() {
         let node; 
         let draw = new Draw();
-
-        draw.drawShape(this);
 
         for (let i = 0; i < this.nodesArray.length; i++ ) {
             node = this.nodesArray[i];
             draw.markUpNode(node);
         }
-        
-        
-    } 
+    }
 
     //===================================================================
     //
@@ -416,65 +398,11 @@ class Shape {
         return {x: dx, y: dy};
     }
 
-    //===================================================================
-    //
-    //      MOVE VERTEX FUNCTIONS
-    //
-    //--------------------------------------------------------------------
 
-    dragNode(mouseX, mouseY, node) {
 
-    }
-    
-    moveOrOffsetVertex(x,y,isMove) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        if(isMove) {
-            vertex.moveToNewPosition(x,y);
-        } else { 
-            vertex.offsetPosition(x,y);
-        }
-        this.translateVertexEllipse(vertex);
-        let distance = this.getMouseDraggedDistance(x, y);
-        vertex.updateDraggedDistance(distance.x, distance.y);
-        if (vertex.hasHandles()) {
-            this.dragVertexHandles(vertex);
-        }
-
-        //this.replaceVertexByUpdated(vertex, index); // is this required?
-    }
-
-    translateVertexEllipse(vertex) {
-        vertex.vertexEllipse.translate(vertex.x,vertex.y);
-    }
-
-    replaceVertexByUpdated(vertex, index) {
-        this.verticesArray.splice(index, 1, vertex);
-    }
-
-    dragVertexHandles(vertex) {
-        vertex.handlesArray[0].dragHandle(vertex.xDraggedDistance, vertex.yDraggedDistance);
-        // only bezier has a second handle
-        if (vertex.type === 'bezier') {
-            vertex.handlesArray[1].dragHandle(vertex.xDraggedDistance, vertex.yDraggedDistance);
-        }
-    }
-
-    dropVertexHandles(index) {
-        let vertex = this.verticesArray[index];
-        if (vertex.hasHandles()) {
-            vertex.handlesArray[0].dropHandle();
-            // only bezier has a second handle
-            if (vertex.type === 'bezier') {
-                vertex.handlesArray[1].dropHandle();
-            }
-        }   
-    }
-
-    moveHandle(x,y) {
-        let vertex = this.verticesArray[this.activeVertexIndex];
-        let handle = vertex.handlesArray[this.activeHandleIndex];
-        handle.moveHandle(x,y);
-    }
+    //replaceVertexByUpdated(vertex, index) {
+    //    this.verticesArray.splice(index, 1, vertex);
+    //}
 
     
     
