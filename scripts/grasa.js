@@ -41,9 +41,16 @@ function setup() {
     shape2.addNode( 500, 400, 'line');
     shape2.closeGPath();
 
+    shape3 = new Shape('ivory', 'mediumorchid', 1);
+    shape3.addNode( 100, 100, 'start');
+    shape3.addNode( 100, 300, 'bezier');
+    shape3.addNode( 300, 200, 'line');
+    shape3.closeGPath();
+
     shapesLibrary = new ShapesLibrary();
     shapesLibrary.add(shape1);
     shapesLibrary.add(shape2);
+    shapesLibrary.add(shape3);
 
 }
 
@@ -51,10 +58,12 @@ function draw() {
     drawBackground();
     shape1.draw(); 
     shape2.draw(); 
+    shape3.draw();
     intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
     intersectShape.draw();
     shape1.drawMarkUp(); 
     shape2.drawMarkUp();
+    shape3.drawMarkUp();
     textStuff(); 
 }
 
@@ -71,18 +80,21 @@ function mousePressed() {
     console.log(`mouse pressed`);
     shape1.mousePress(mouseX, mouseY);
     shape2.mousePress(mouseX, mouseY);
+    shape3.mousePress(mouseX, mouseY);
 }
 
 function mouseDragged() {
     console.log(`mouse dragged`);
     shape1.mouseDrag(mouseX, mouseY);
     shape2.mouseDrag(mouseX, mouseY);
+    shape3.mouseDrag(mouseX, mouseY);
 }
 
 function mouseReleased() {
     console.log(`mouse released`);
     shape1.mouseRelease();
     shape2.mouseRelease();
+    shape3.mouseRelease();
 }
 
 
@@ -199,8 +211,8 @@ function setupConfig() {
     };
 
     ellipseRadii = {
-        vertex:         45,             //15
-        handle:         20              //8
+        vertex:         15,             //15
+        handle:         8              //8
     };
 
     handles = {
