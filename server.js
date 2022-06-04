@@ -94,4 +94,4 @@ app.use(function(req, res) {
 
 
 
-app.listen(4000, (req,res) => {console.log('Server listening on port 4000')});
+app.listen(process.env.PORT || 4000, (req,res) => {console.log('Server listening on port 4000')});
