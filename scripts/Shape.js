@@ -323,7 +323,8 @@ class Shape {
         }
 
         overlapHandler() {
-            console.log(`count is: ${this.state.mouseInsideHowManyPointMarkers}`);
+            //console.log(`mouse inside how many: ${this.state.mouseInsideHowManyPointMarkers}`);
+            
             // going into an overlap
             if(this.state.mouseInsideHowManyPointMarkers > 1) {
                 console.log(`overlapHandler: activeNodeIndex is ${this.state.activeNodeIndex}`);

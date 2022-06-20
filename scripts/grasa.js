@@ -7,27 +7,27 @@ function setup() {
     
     let sketchWidth = document.getElementById("grasa-div").offsetWidth;
     let sketchHeight = document.getElementById("grasa-div").offsetHeight;
-    let renderer = createCanvas(sketchWidth, 700);
+    let renderer = createCanvas(sketchWidth, 550);
     renderer.parent("grasa-div");
     colorMode(HSB, 100);
 
     // do config
     config = setupConfig();
 
+    socket = io.connect('http://localhost:4000');
+    //socket.emit('chat message', `i'm the client.. wow`);
+    
+    load = false;
+
+    socket.on(`load req recd`, (msg) => {
+        load = true;
+        console.log(msg);
+    });
+
 
 
     mode = 'SCULPT';
     nextAction = 'sculpt shapeA';
-
-/*
-    shapeBez = new Shape('steelblue', 'ivory', 3);
-    shapeBez.addNode( 100, 100, 'start');
-    shapeBez.addNode( 400, 400, 'bezier');
-    shapeBez.addNode( 550, 250, 'quad');
-    shapeBez.addNode( 130, 70, 'quad');
-    shapeBez.closeGPath();
-    
-*/
 
     shape1 = new Shape('thistle', 'lightseagreen', 6);
     shape1.addNode( 400, 150, 'start');
@@ -55,16 +55,24 @@ function setup() {
 }
 
 function draw() { 
-    drawBackground();
-    shape1.draw(); 
-    shape2.draw(); 
-    shape3.draw();
-    intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
-    intersectShape.draw();
-    shape1.drawMarkUp(); 
-    shape2.drawMarkUp();
-    shape3.drawMarkUp();
-    textStuff(); 
+    if (load) {
+        clear();
+        drawBackground();
+        textStuff();
+    }
+    else {
+
+        drawBackground();
+        shape1.draw(); 
+        shape2.draw(); 
+        shape3.draw();
+        intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
+        intersectShape.draw();
+        shape1.drawMarkUp(); 
+        shape2.drawMarkUp();
+        shape3.drawMarkUp();
+        textStuff(); 
+    }
 }
 
 function mouseMoved() {
@@ -77,26 +85,25 @@ function mouseMoved() {
 }
 
 function mousePressed() {
-    console.log(`mouse pressed`);
+    //console.log(`mouse pressed`);
     shape1.mousePress(mouseX, mouseY);
     shape2.mousePress(mouseX, mouseY);
     shape3.mousePress(mouseX, mouseY);
 }
 
 function mouseDragged() {
-    console.log(`mouse dragged`);
+    //console.log(`mouse dragged`);
     shape1.mouseDrag(mouseX, mouseY);
     shape2.mouseDrag(mouseX, mouseY);
     shape3.mouseDrag(mouseX, mouseY);
 }
 
 function mouseReleased() {
-    console.log(`mouse released`);
+    //console.log(`mouse released`);
     shape1.mouseRelease();
     shape2.mouseRelease();
     shape3.mouseRelease();
 }
-
 
 
 function keyPressed() {

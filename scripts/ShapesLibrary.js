@@ -22,7 +22,7 @@ class ShapesLibrary {
             mouseInPointerMarkersTotal += 
                     shape.state.mouseInsideHowManyPointMarkers;
                      
-            console.log(`countTOTAL: ${mouseInPointerMarkersTotal}`);
+            //console.log(`countTOTAL: ${mouseInPointerMarkersTotal}`);
 
             if (mouseInPointerMarkersTotal > 1) {
                 // deactivate any existing nodes while in an overlap
