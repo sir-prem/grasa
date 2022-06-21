@@ -19,7 +19,7 @@ function setup() {
 
 
 
-    socket = io.connect('http://localhost:4000');
+    socket = io.connect('https://boiling-river-33690.herokuapp.com');
     //socket.emit('chat message', `i'm the client.. wow`);
     
     load = false;
