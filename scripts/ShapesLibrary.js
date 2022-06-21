@@ -3,10 +3,15 @@ class ShapesLibrary {
     constructor() {
 
         this.shapesArray = [];
+        this.intersectionShapesArray = [];
     }
 
     add(shape) {
         this.shapesArray.push(shape);
+    }
+
+    addIntersection(intersectionShape) {
+        this.intersectionShapesArray.push(intersectionShape);
     }
 
     mouseOver() {

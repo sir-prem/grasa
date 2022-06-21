@@ -14,6 +14,11 @@ function setup() {
     // do config
     config = setupConfig();
 
+    mode = 'SCULPT';
+    nextAction = 'sculpt shapeA';
+
+
+
     socket = io.connect('http://localhost:4000');
     //socket.emit('chat message', `i'm the client.. wow`);
     
@@ -24,34 +29,38 @@ function setup() {
         console.log(msg);
     });
 
-
-
-    mode = 'SCULPT';
-    nextAction = 'sculpt shapeA';
-
-    shape1 = new Shape('thistle', 'lightseagreen', 6);
-    shape1.addNode( 400, 150, 'start');
-    shape1.addNode( 200, 350, 'line');
-    shape1.addNode( 600, 350, 'line');
-    shape1.closeGPath();
-
-    shape2 = new Shape('steelblue', 'ivory', 3);
-    shape2.addNode( 300, 100, 'start');
-    shape2.addNode( 100, 400, 'bezier');
-    shape2.addNode( 500, 400, 'line');
-    shape2.closeGPath();
-
-    shape3 = new Shape('ivory', 'mediumorchid', 1);
-    shape3.addNode( 100, 100, 'start');
-    shape3.addNode( 100, 300, 'bezier');
-    shape3.addNode( 300, 200, 'line');
-    shape3.closeGPath();
-
+    
     shapesLibrary = new ShapesLibrary();
-    shapesLibrary.add(shape1);
-    shapesLibrary.add(shape2);
-    shapesLibrary.add(shape3);
 
+    if (load) {
+        // parse the JSON
+        // populate shapesLibrary
+    }
+    else {
+        // use test shapes
+        // SHOULD BE - create shapes from new (create mode)
+        shape1 = new Shape('thistle', 'lightseagreen', 6);
+        shape1.addNode( 400, 150, 'start');
+        shape1.addNode( 200, 350, 'line');
+        shape1.addNode( 600, 350, 'line');
+        shape1.closeGPath();
+    
+        shape2 = new Shape('steelblue', 'ivory', 3);
+        shape2.addNode( 300, 100, 'start');
+        shape2.addNode( 100, 400, 'bezier');
+        shape2.addNode( 500, 400, 'line');
+        shape2.closeGPath();
+    
+        shape3 = new Shape('ivory', 'mediumorchid', 1);
+        shape3.addNode( 100, 100, 'start');
+        shape3.addNode( 100, 300, 'bezier');
+        shape3.addNode( 300, 200, 'line');
+        shape3.closeGPath();
+    
+        shapesLibrary.add(shape1);
+        shapesLibrary.add(shape2);
+        shapesLibrary.add(shape3);
+    }
 }
 
 function draw() { 
