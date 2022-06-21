@@ -103,6 +103,9 @@ app.use(flash());
 var socket = require('socket.io');
 
 var io = socket(server);
+
+io.set('origins', 'https://boiling-river-33690.herokuapp.com:80');
+
 io.sockets.on('connection', newConnection);
 
 var ShapesData = require('./models/ShapesData')
