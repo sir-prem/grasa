@@ -1,3 +1,6 @@
+var shapesLibrary;
+var load;
+var shape1, shape2, shape3;
 
 function setup() {
     p5.disableFriendlyErrors = true; // disables FES
@@ -17,28 +20,48 @@ function setup() {
     mode = 'SCULPT';
     nextAction = 'sculpt shapeA';
 
+    //========================================================================
+    //
+    //      Change here for local testing or server deployment
+    //
+    //------------------------------------------------------------------------
 
-
-    socket = io.connect('https://boiling-river-33690.herokuapp.com');
-    //socket.emit('chat message', `i'm the client.. wow`);
+    socket = io.connect('http://localhost:4000');
+    //socket = io.connect('https://boiling-river-33690.herokuapp.com');
     
     load = false;
 
-    socket.on(`load req recd`, (msg) => {
+    socket.on(`load req recd`, (JSONLoadData) => {
         load = true;
-        console.log(msg);
+        console.log(JSONLoadData.message);
+        shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
+        shape1 = shapesLibrary.shapesArray[0];
+        shape1.recreateGPath();
+        shape2 = shapesLibrary.shapesArray[1];
+        shape2.recreateGPath();
+        shape3 = shapesLibrary.shapesArray[2];
+        shape3.recreateGPath();
+        console.log(`JSONLoadData shapesArray length is: ${shapesLibrary.shapesArray.length}`);
+        console.log(`first shape's vertex is at:
+                                 (${shape1.nodesArray[0].vertex.x},${shape1.nodesArray[0].vertex.y}`);
     });
 
     
-    shapesLibrary = new ShapesLibrary();
+    
 
     if (load) {
-        // parse the JSON
-        // populate shapesLibrary
+        // this if .. else clause may no longer be needed
+
+        console.log(`if load clause: shapesArray length is ${shapesLibrary.shapesArray.length}`);
+        
     }
     else {
         // use test shapes
         // SHOULD BE - create shapes from new (create mode)
+        /*
+
+        shapesLibrary = new ShapesLibrary();
+
         shape1 = new Shape('thistle', 'lightseagreen', 6);
         shape1.addNode( 400, 150, 'start');
         shape1.addNode( 200, 350, 'line');
@@ -60,18 +83,16 @@ function setup() {
         shapesLibrary.add(shape1);
         shapesLibrary.add(shape2);
         shapesLibrary.add(shape3);
+        */
     }
 }
 
 function draw() { 
     if (load) {
-        clear();
+        //clear();
         drawBackground();
-        textStuff();
-    }
-    else {
-
-        drawBackground();
+        //console.log(`DRAW() function: first shape's vertex is at:
+        //                         (${shape1.nodesArray[0].vertex.x},${shape1.nodesArray[0].vertex.y}`);
         shape1.draw(); 
         shape2.draw(); 
         shape3.draw();
@@ -80,6 +101,21 @@ function draw() {
         shape1.drawMarkUp(); 
         shape2.drawMarkUp();
         shape3.drawMarkUp();
+        textStuff();
+    }
+    else {
+
+        drawBackground();
+        /*
+        shape1.draw(); 
+        shape2.draw(); 
+        shape3.draw();
+        intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
+        intersectShape.draw();
+        shape1.drawMarkUp(); 
+        shape2.drawMarkUp();
+        shape3.drawMarkUp();
+        */
         textStuff(); 
     }
 }

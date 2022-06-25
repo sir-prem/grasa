@@ -1,13 +1,10 @@
 class Node {
 
-    
     constructor(x, y, type) {
         this.vertex = new Vertex(x, y);
         this.type = type;   // either 'start', 'line', 'bezier', 'quad'
         this.handlesArray = [];
         this.state = new NodeState();
-
-          
 
     }
 

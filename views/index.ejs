@@ -48,7 +48,7 @@
     </div>
     <div class="row">
         <div class="col-sm-12" id="save-btn">
-            <button onclick="myFunction('<%= email %>')" class="btn btn-primary btn-block">Save</button>
+            <button onclick="saveRequest('<%= email %>')" class="btn btn-primary btn-block">Save</button>
             <button onclick="loadRequest('<%= email %>')" class="btn btn-primary btn-block">Load</button>
         </div>
     </div>
@@ -66,10 +66,10 @@
         socket.emit('user email', `${email}`);
     }
 
-    function myFunction(email) {
+    function saveRequest(email) {
         alert(`shapesLibrary length is: ${shapesLibrary.shapesArray.length}`);
         
-        socket.emit('chat message', JSON.stringify(shapesLibrary, null, 4));
+        socket.emit('save request', JSON.stringify(shapesLibrary, null, 4));
     }
 
     function loadRequest(email) {
