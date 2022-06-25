@@ -136,18 +136,36 @@ function newConnection(socket) {
 
         var result = await ShapesData.findOne(filter).exec();
 
-        var shapesLibraryFromDB = JSON.parse(result.JSONData);
+        console.log(`on load request, result is: ${result}`);
 
-        console.log(`load result: ${shapesLibraryFromDB}`);
-        console.log(`... shapesArray length is: ${shapesLibraryFromDB.shapesArray.length}`);
+        if (result !== null) {
 
-        io.to(socket.id).emit(
-                        'load req recd', 
-                        {
-                            shapesLibraryFromDB: shapesLibraryFromDB,
-                            message: `server: load request received from ${msg}`
-                        }
-                    );
+            var shapesLibraryFromDB = JSON.parse(result.JSONData);
+    
+            console.log(`load result: ${shapesLibraryFromDB}`);
+            console.log(`... shapesArray length is: ${shapesLibraryFromDB.shapesArray.length}`);
+    
+            io.to(socket.id).emit(
+                            'load req recd', 
+                            {
+                                shapesLibraryFromDB: shapesLibraryFromDB,
+                                message: `server: load request received from ${msg}`,
+                                result: true
+                            }
+                        );
+
+        }
+        else {
+            console.log(`reaching else clause ?`);
+            io.to(socket.id).emit(
+                'load req recd', 
+                {
+                    message: `server: load request received from ${msg}. Nothing in DB to load.`,
+                    result: false
+                }
+            );
+        }
+
 
     });
 

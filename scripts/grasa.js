@@ -32,18 +32,27 @@ function setup() {
     load = false;
 
     socket.on(`load req recd`, (JSONLoadData) => {
-        load = true;
+
         console.log(JSONLoadData.message);
-        shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
-        shape1 = shapesLibrary.shapesArray[0];
-        shape1.recreateGPath();
-        shape2 = shapesLibrary.shapesArray[1];
-        shape2.recreateGPath();
-        shape3 = shapesLibrary.shapesArray[2];
-        shape3.recreateGPath();
-        console.log(`JSONLoadData shapesArray length is: ${shapesLibrary.shapesArray.length}`);
-        console.log(`first shape's vertex is at:
-                                 (${shape1.nodesArray[0].vertex.x},${shape1.nodesArray[0].vertex.y}`);
+
+        if (JSONLoadData.result) {
+
+            load = true;
+            
+            shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
+            shape1 = shapesLibrary.shapesArray[0];
+            shape1.recreateGPath();
+            shape2 = shapesLibrary.shapesArray[1];
+            shape2.recreateGPath();
+            shape3 = shapesLibrary.shapesArray[2];
+            shape3.recreateGPath();
+            console.log(`JSONLoadData shapesArray length is: ${shapesLibrary.shapesArray.length}`);
+            console.log(`first shape's vertex is at:
+                                     (${shape1.nodesArray[0].vertex.x},${shape1.nodesArray[0].vertex.y}`);
+        }
+        else {
+            // anything here if req'd
+        }
     });
 
     
@@ -123,31 +132,41 @@ function draw() {
 function mouseMoved() {
     //shape1.mouseOver();
     //shape2.mouseOver();
-    shapesLibrary.mouseOver();
+    if (load) {
+
+        shapesLibrary.mouseOver();
+    }
 
     // prevent default
     return false;
 }
 
 function mousePressed() {
-    //console.log(`mouse pressed`);
-    shape1.mousePress(mouseX, mouseY);
-    shape2.mousePress(mouseX, mouseY);
-    shape3.mousePress(mouseX, mouseY);
+    if (load) {
+        //console.log(`mouse pressed`);
+        shape1.mousePress(mouseX, mouseY);
+        shape2.mousePress(mouseX, mouseY);
+        shape3.mousePress(mouseX, mouseY);
+    }
 }
 
 function mouseDragged() {
-    //console.log(`mouse dragged`);
-    shape1.mouseDrag(mouseX, mouseY);
-    shape2.mouseDrag(mouseX, mouseY);
-    shape3.mouseDrag(mouseX, mouseY);
+    if (load) {
+    
+        //console.log(`mouse dragged`);
+        shape1.mouseDrag(mouseX, mouseY);
+        shape2.mouseDrag(mouseX, mouseY);
+        shape3.mouseDrag(mouseX, mouseY);
+    }
 }
 
 function mouseReleased() {
-    //console.log(`mouse released`);
-    shape1.mouseRelease();
-    shape2.mouseRelease();
-    shape3.mouseRelease();
+    if (load) {
+        //console.log(`mouse released`);
+        shape1.mouseRelease();
+        shape2.mouseRelease();
+        shape3.mouseRelease();
+    }
 }
 
 

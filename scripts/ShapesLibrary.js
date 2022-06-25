@@ -63,9 +63,9 @@ class ShapesLibrary {
                 this.shapesArray.push(shape);
 
 
-                }
-
             }
+
+        }
     }
 
 
