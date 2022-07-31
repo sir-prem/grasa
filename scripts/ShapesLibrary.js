@@ -15,6 +15,8 @@ class ShapesLibrary {
         }
 
         else {
+            // reconstruct ShapesArray from DB
+
             JSONShapesArray = JSONFromDB.shapesArray;
         
             for (i = 0; i < JSONShapesArray.length; i++) {
@@ -62,6 +64,27 @@ class ShapesLibrary {
                 // push shape into shapesArray
                 this.shapesArray.push(shape);
 
+                
+                
+            }
+
+            // reconstruct intersectionShapesArray
+            let intersectionShape;
+            let JSONIntersectionShapesArray = JSONFromDB.intersectionShapesArray;
+            let k, JSONIntersectionShape;
+
+            for (k = 0; k < JSONIntersectionShapesArray.length; k++) {
+                JSONIntersectionShape = JSONIntersectionShapesArray[k];
+
+                intersectionShape = new IntersectionShape(
+                                JSONIntersectionShape.shapeA_index,
+                                JSONIntersectionShape.shapeB_index,
+                                JSONIntersectionShape.fill,
+                                JSONIntersectionShape.stroke,
+                                JSONIntersectionShape.strokeWidth
+                );
+                
+                this.intersectionShapesArray.push(intersectionShape);
 
             }
 
@@ -108,5 +131,63 @@ class ShapesLibrary {
                 shape.deactivateExistingNode();
             }
         }
+
+    mousePress() {
+        let shape;
+        for (let i = 0; i < this.shapesArray.length; i++) {
+
+            shape = this.shapesArray[i];
+
+            shape.mousePress(mouseX, mouseY);
+        }
+
+    }
+
+    mouseDrag() {
+        let shape;
+        for (let i = 0; i < this.shapesArray.length; i++) {
+
+            shape = this.shapesArray[i];
+
+            shape.mouseDrag(mouseX, mouseY);
+        }
+
+    }
+
+    mouseRelease() {
+        let shape;
+        for (let i = 0; i < this.shapesArray.length; i++) {
+
+            shape = this.shapesArray[i];
+
+            shape.mouseRelease(mouseX, mouseY);
+        }
+
+    }
+
+    draw() {
+        let i, j, k;
+        let shape, intersectionShape;
+
+        // draw shapes
+        for (i = 0; i < this.shapesArray.length; i++) {
+            shape = this.shapesArray[i];
+            shape.recreateGPath();
+            shape.draw();
+            shape.drawMarkUp();
+        }
+
+        // draw intersections
+        for (j = 0; j < this.intersectionShapesArray.length; j++) {
+            intersectionShape = this.intersectionShapesArray[j];
+            intersectionShape.draw(this.shapesArray);
+        }
+
+        // draw shapes mark up (on top most layer)
+        for (k = 0; k < this.shapesArray.length; k++) {
+            shape = this.shapesArray[k];
+            shape.drawMarkUp();
+        }
+    }
 
 }

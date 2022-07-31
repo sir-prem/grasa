@@ -7,12 +7,12 @@ require('dotenv').config();
 const { auth, requiresAuth } = require('express-openid-connect');
 
 const config = {
-  authRequired: false,
-  auth0Logout: true,
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  baseURL: process.env.BASE_URL,
-  clientID: process.env.CLIENT_ID,
-  secret: process.env.SECRET,
+    authRequired: false,
+    auth0Logout: true,
+    issuerBaseURL: process.env.ISSUER_BASE_URL,
+    baseURL: process.env.BASE_URL,
+    clientID: process.env.CLIENT_ID,
+    secret: process.env.SECRET,
 };
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
@@ -107,43 +107,30 @@ io.sockets.on('connection', newConnection);
 
 var ShapesData = require('./models/ShapesData')
 var userEmail;
-var clients = [];
-var client;
-
 
 
 function newConnection(socket) {
     console.log(`new connection: ${socket.id}`);
 
+    //======================================================
+    // USER EMAIL request 
+    //
     socket.on('user email', (msg) => {
-        userEmail = msg;
-        client = {
-            socketID: socket.id,
-            email: msg
-        };
-        clients.push(client);
-        console.log(`clients[] length is: ${clients.length}`);
-        console.log(`userEmail is: ${userEmail}`);
+        console.log(`userEmail is: ${msg}`);
     });
 
-
-
-
-
+    //======================================================
+    // LOAD request 
+    //
     socket.on('load request', async (msg) => {
 
         const filter = { userEmail: msg };
-
         var result = await ShapesData.findOne(filter).exec();
 
-        console.log(`on load request, result is: ${result}`);
-
+        // only load if there was something saved for this userEmail
         if (result !== null) {
 
             var shapesLibraryFromDB = JSON.parse(result.JSONData);
-    
-            console.log(`load result: ${shapesLibraryFromDB}`);
-            console.log(`... shapesArray length is: ${shapesLibraryFromDB.shapesArray.length}`);
     
             io.to(socket.id).emit(
                             'load req recd', 
@@ -153,49 +140,38 @@ function newConnection(socket) {
                                 result: true
                             }
                         );
-
         }
         else {
-            console.log(`reaching else clause ?`);
+            //console.log(`reaching else clause ?`);
             io.to(socket.id).emit(
-                'load req recd', 
-                {
-                    message: `server: load request received from ${msg}. Nothing in DB to load.`,
-                    result: false
-                }
-            );
+                            'load req recd', 
+                            {
+                                message:    `server: load request received from ${msg}. 
+                                                Nothing in DB to load.`,
+                                result:     false
+                            }
+                        );
         }
-
-
     });
 
-    
-
-
-
+    //======================================================
+    //  SAVE request
+    //
     socket.on('save request', async (msg) => {
 
         
         const filter = { userEmail: userEmail };
         const update = { JSONData: msg };
-        console.log(filter);
 
         let shapesData = await ShapesData.findOneAndUpdate(
                                             filter,
                                             update, 
-                                            { new: true,
-                                              upsert: true }
+                                            { 
+                                                new:        true,
+                                                upsert:     true 
+                                            }
                                         );
 
-        /*
-        var shapesData = new ShapesData({ 
-                userEmail: userEmail, 
-                JSONData: msg 
-            });
-
-        shapesData.save();
-        */
-        console.log(shapesData);
         console.log('saved to DB');
     });
 

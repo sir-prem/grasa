@@ -20,6 +20,8 @@ function setup() {
     mode = 'SCULPT';
     nextAction = 'sculpt shapeA';
 
+    shapesLibrary = new ShapesLibrary();
+
     //========================================================================
     //
     //      Change here for local testing or server deployment
@@ -28,8 +30,7 @@ function setup() {
 
     socket = io.connect('http://localhost:4000');
     //socket = io.connect('https://boiling-river-33690.herokuapp.com');
-    
-    load = false;
+
 
     socket.on(`load req recd`, (JSONLoadData) => {
 
@@ -37,18 +38,10 @@ function setup() {
 
         if (JSONLoadData.result) {
 
-            load = true;
+            //NOTE: here there could be a warning, before loading old data from DB,
+            //      e.g. Are you sure? Any unsaved work will be lost
             
             shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
-            shape1 = shapesLibrary.shapesArray[0];
-            shape1.recreateGPath();
-            shape2 = shapesLibrary.shapesArray[1];
-            shape2.recreateGPath();
-            shape3 = shapesLibrary.shapesArray[2];
-            shape3.recreateGPath();
-            console.log(`JSONLoadData shapesArray length is: ${shapesLibrary.shapesArray.length}`);
-            console.log(`first shape's vertex is at:
-                                     (${shape1.nodesArray[0].vertex.x},${shape1.nodesArray[0].vertex.y}`);
         }
         else {
             // anything here if req'd
@@ -58,16 +51,12 @@ function setup() {
     
     
 
-    if (load) {
-        // this if .. else clause may no longer be needed
-
-        console.log(`if load clause: shapesArray length is ${shapesLibrary.shapesArray.length}`);
+    
+        // create shapes from new (create mode)
         
-    }
-    else {
-        // use test shapes
-        // SHOULD BE - create shapes from new (create mode)
         /*
+        example of what create mode should do:
+        ---------------------------------------
 
         shapesLibrary = new ShapesLibrary();
 
@@ -93,47 +82,19 @@ function setup() {
         shapesLibrary.add(shape2);
         shapesLibrary.add(shape3);
         */
-    }
+
 }
 
 function draw() { 
-    if (load) {
-        //clear();
-        drawBackground();
-        //console.log(`DRAW() function: first shape's vertex is at:
-        //                         (${shape1.nodesArray[0].vertex.x},${shape1.nodesArray[0].vertex.y}`);
-        shape1.draw(); 
-        shape2.draw(); 
-        shape3.draw();
-        intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
-        intersectShape.draw();
-        shape1.drawMarkUp(); 
-        shape2.drawMarkUp();
-        shape3.drawMarkUp();
-        textStuff();
-    }
-    else {
-
-        drawBackground();
-        /*
-        shape1.draw(); 
-        shape2.draw(); 
-        shape3.draw();
-        intersectShape = new IntersectionShape(shape1, shape2, 'moccasin','ivory', 1);
-        intersectShape.draw();
-        shape1.drawMarkUp(); 
-        shape2.drawMarkUp();
-        shape3.drawMarkUp();
-        */
-        textStuff(); 
+    drawBackground();
+    drawUIOverlay();
+    if (shapesLibrary.shapesArray.length > 0) {
+        shapesLibrary.draw();
     }
 }
 
 function mouseMoved() {
-    //shape1.mouseOver();
-    //shape2.mouseOver();
-    if (load) {
-
+    if (shapesLibrary.shapesArray.length > 0) {
         shapesLibrary.mouseOver();
     }
 
@@ -142,30 +103,20 @@ function mouseMoved() {
 }
 
 function mousePressed() {
-    if (load) {
-        //console.log(`mouse pressed`);
-        shape1.mousePress(mouseX, mouseY);
-        shape2.mousePress(mouseX, mouseY);
-        shape3.mousePress(mouseX, mouseY);
+    if (shapesLibrary.shapesArray.length > 0) {
+       shapesLibrary.mousePress();
     }
 }
 
 function mouseDragged() {
-    if (load) {
-    
-        //console.log(`mouse dragged`);
-        shape1.mouseDrag(mouseX, mouseY);
-        shape2.mouseDrag(mouseX, mouseY);
-        shape3.mouseDrag(mouseX, mouseY);
+    if (shapesLibrary.shapesArray.length > 0) {
+       shapesLibrary.mouseDrag();
     }
 }
 
 function mouseReleased() {
-    if (load) {
-        //console.log(`mouse released`);
-        shape1.mouseRelease();
-        shape2.mouseRelease();
-        shape3.mouseRelease();
+    if (shapesLibrary.shapesArray.length > 0) {
+       shapesLibrary.mouseRelease();
     }
 }
 
@@ -184,25 +135,33 @@ function keyPressed() {
         nextAction = 'closeShape';
     }
     
-    else {
+    else if (key === 's') {
         mode = 'SCULPT';
         nextAction = 'sculptShape';
     }
+    else {
+        mode = 'UNKNOWN';
+        nextAction = 'unknown';
+    }
 }
 
-function textStuff() {
+function drawUIOverlay() {
+
+    //draw mouse co-ords
+    fill('indianred');
     textSize(14);
-    fill(0, 0, 90);
     text(`(${Math.trunc(mouseX)},${Math.trunc(mouseY)})`, mouseX+10, mouseY+20);
     
+    // draw header/logo
+    fill('ivory');
     textSize(18);
-    fill(0, 0, 100);
     text(`grasa v1.0`, width-135, 30);
     textSize(10);
     text(`An abstract shape`, width-135, 45);
     text(`ideation tool`, width-135, 55);
 
-    fill(45, 90, 100);
+    // draw mode and next action
+    fill('lightseagreen');
     textSize(11);
     text(`${key} - ${mode} mode`, width-180, 130);
     text(`next action: ${nextAction}`, width-180, 145);
