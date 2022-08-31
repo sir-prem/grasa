@@ -117,6 +117,7 @@ function newConnection(socket) {
     //
     socket.on('user email', (msg) => {
         console.log(`userEmail is: ${msg}`);
+        userEmail = msg;
     });
 
     //======================================================
@@ -158,7 +159,7 @@ function newConnection(socket) {
     //  SAVE request
     //
     socket.on('save request', async (msg) => {
-
+        console.log(`save req: user email is: ${userEmail}`);
         
         const filter = { userEmail: userEmail };
         const update = { JSONData: msg };
