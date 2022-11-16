@@ -51,28 +51,27 @@ app.get('/profile', requiresAuth(), (req, res) => {
 //--------------------------------------------------------------------------
 
 var mongoose = require("mongoose");
-var flash = require("connect-flash");
+//var flash = require("connect-flash");
 
 // path to mongo database
 var uri = "mongodb+srv://cluster0.7hvms.mongodb.net/test";
 
 // connect to DB
 mongoose
-.connect(
-    uri,
-    {
-        dbName: 'grasaDB',
-        user: 'admin',
-        pass: '00000',
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    }   
-  )
-  .then(
-      () => {
-          console.log('MongoDB connected...');
-      }
-  )
+	.connect( uri,
+		{
+			dbName: 'grasaDB',
+			user: 'admin',
+			pass: '00000',
+			useNewUrlParser: true,
+			useUnifiedTopology: true
+		}   
+	)
+	.then(
+		() => {
+			console.log('MongoDB connected...');
+		}
+	)
 
 
  
@@ -100,7 +99,6 @@ app.use(flash());
 //----------------------------------------------------------------
 
 var socket = require('socket.io');
-
 var io = socket(server);
 
 io.sockets.on('connection', newConnection);
@@ -110,68 +108,100 @@ var userEmail;
 
 
 function newConnection(socket) {
+
     console.log(`new connection: ${socket.id}`);
 
+
+
+
     //======================================================
+	//
     // USER EMAIL request 
     //
-    socket.on('user email', (msg) => {
-        console.log(`userEmail is: ${msg}`);
-        userEmail = msg;
-    });
+	//			- on receiving user email, set it to
+	//				userEmail global variable
+	//
+	//======================================================
+
+		socket.on('user email', (userEmailReceived) => {
+			console.log(`userEmail is: ${userEmailReceived}`);
+			userEmail = userEmailReceived;
+		});
+
+
+
+
+
 
     //======================================================
-    // LOAD request 
+	//
+    // 		LOAD request 
     //
-    socket.on('load request', async (msg) => {
+	//			- load saved graphic from database
+	//
+	//======================================================
 
-        const filter = { userEmail: msg };
-        var result = await ShapesData.findOne(filter).exec();
+		socket.on('load request', async (msg) => {
 
-        // only load if there was something saved for this userEmail
-        if (result !== null) {
+			const filter = { userEmail: msg };
+			var result = await ShapesData.findOne(filter).exec();
 
-            var shapesLibraryFromDB = JSON.parse(result.JSONData);
-    
-            io.to(socket.id).emit(
-                            'load req recd', 
-                            {
-                                shapesLibraryFromDB: shapesLibraryFromDB,
-                                message: `server: load request received from ${msg}`,
-                                result: true
-                            }
-                        );
-        }
-        else {
-            //console.log(`reaching else clause ?`);
-            io.to(socket.id).emit(
-                            'load req recd', 
-                            {
-                                message:    `server: load request received from ${msg}. 
-                                                Nothing in DB to load.`,
-                                result:     false
-                            }
-                        );
-        }
-    });
+			// only perform load if anything exists in DB for this user email 
+			if (result !== null) {
+
+				var shapesLibraryFromDB = JSON.parse(result.JSONData);
+		
+				io.to(socket.id).emit(
+						'load req recd', 
+						{
+							shapesLibraryFromDB: shapesLibraryFromDB,
+							message: `server: load request received from ${msg}`,
+							result: true
+						}
+					);
+			}
+
+			// case where nothing exists in DB for this user (email)
+			else {
+				io.to(socket.id).emit(
+						'load req recd', 
+						{
+							message:    `server: load request received from ${msg}. 
+											Nothing in DB to load.`,
+							result:     false
+						}
+					);
+			}
+
+		});
+
+
+
+
 
     //======================================================
+	//
     //  SAVE request
     //
+	//			- save this user's graphic to database
+	//
+	//======================================================
+
     socket.on('save request', async (msg) => {
+
         console.log(`save req: user email is: ${userEmail}`);
         
         const filter = { userEmail: userEmail };
         const update = { JSONData: msg };
 
         let shapesData = await ShapesData.findOneAndUpdate(
-                                            filter,
-                                            update, 
-                                            { 
-                                                new:        true,
-                                                upsert:     true 
-                                            }
-                                        );
+								filter,
+								update, 
+								{ 
+									new:        true,
+									upsert:     true 
+								}
+							);
 
         console.log('saved to DB');
     });

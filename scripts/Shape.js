@@ -24,7 +24,7 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    printAllNodeDetails() {
+    function printAllNodeDetails() {
         console.log(`******************************************`);
         console.log(`*      SHAPE'S NODE DETAILS              *`);
         console.log(`*                                        *`);
@@ -40,11 +40,11 @@ class Shape {
         console.log(`******************************************`);
     }
 
-    setGPathStyle() {
+    function setGPathStyle() {
         this.gPath = GPathStyle.set(this.gPath, this.gPathStyle);
     }
 
-    addNode(mouseClickX, mouseClickY, type) {
+    function addNode(mouseClickX, mouseClickY, type) {
         let newNode = new Node(mouseClickX, mouseClickY, type);
         let handleCoords;
     
@@ -65,17 +65,17 @@ class Shape {
         this.nodesArray.push(newNode);
     }
 
-        // HELPERS for addNode() function
+        // HELPERS for addNode() 
 
-        addStartPoint(newNode) {
+        function addStartPoint(newNode) {
             this.gPath.moveTo(newNode.vertex.x, newNode.vertex.y);
         }
 
-        addLineSegment(newNode) {
+        function addLineSegment(newNode) {
             this.gPath.lineTo(newNode.vertex.x, newNode.vertex.y);
         }
 
-        addBezierOrQuadSegment(node, handleCoords, type) {
+        function addBezierOrQuadSegment(node, handleCoords, type) {
 
             switch(type) {
                 case 'bezier':
@@ -93,7 +93,7 @@ class Shape {
             }
         }
 
-        getHandleCoords(node) {
+        function getHandleCoords(node) {
             let currentVertex = node.vertex;
             let prevVertexCoords = this.getPreviousNodeVertexCoordinates();
             let handleCoords = Vertex.calculateInitialHandleCoordinates(
@@ -104,7 +104,7 @@ class Shape {
             return handleCoords;
         }
 
-        addHandlesToNode(node, handleCoords, type) {
+        function addHandlesToNode(node, handleCoords, type) {
             
             // first handle
             let newVertexHandle1 = new Handle( 
@@ -127,8 +127,8 @@ class Shape {
             return node;
         }
 
-            // HELPER for getHandleCoords() function
-            getPreviousNodeVertexCoordinates() {
+            // HELPER for getHandleCoords() 
+            function getPreviousNodeVertexCoordinates() {
                 let prevNodeIndex = this.nodesArray.length - 1;
                 let prevNode = this.nodesArray[prevNodeIndex];
                 return {
@@ -137,19 +137,19 @@ class Shape {
                 }
             }
     
-    closeGPath() {
+    function closeGPath() {
         this.gPath.closePath();
     }
 
 
 
     // checks whether point is within (closed) shape's bounds
-    containsPoint(x, y) {
+    function containsPoint(x, y) {
         return this.gPath.contains(x,y);
     }
 
     // Reconstructs shape from moved vertices
-    recreateGPath() {
+    function recreateGPath() {
         let node, handleCoords;
         this.gPath = new g.Path();
 
@@ -194,7 +194,7 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    mouseOver() {
+    function mouseOver() {
 
         this.setMouseInsidePointMarkers();
         this.overlapHandler();
@@ -203,7 +203,7 @@ class Shape {
 
         // HELPERS for mouseOver()
 
-        activeNodeExists() {
+        function activeNodeExists() {
             if (this.state.activeNodeIndex >= 0) {
                 return true;
             }
@@ -212,13 +212,13 @@ class Shape {
             }
         }
 
-        getExistingActiveNode() {
+        function getExistingActiveNode() {
             return this.nodesArray[this.state.activeNodeIndex];
         }
 
 
 
-    mousePress(mouseX, mouseY) {
+    function mousePress(mouseX, mouseY) {
 
         let existingActiveNode;
 
@@ -234,7 +234,7 @@ class Shape {
         }
     }
 
-    mouseDrag(mouseX, mouseY) {
+    function mouseDrag(mouseX, mouseY) {
 
         let existingActiveNode;
 
@@ -246,7 +246,7 @@ class Shape {
         }
     }
 
-    mouseRelease() {
+    function mouseRelease() {
 
         let existingActiveNode;
 
@@ -263,9 +263,9 @@ class Shape {
         
     }
 
-        // HELPERS for mouse action functions
+        // HELPERS for mouse action methods
 
-        setMouseInsidePointMarkers() {
+        function setMouseInsidePointMarkers() {
 
             let node;
 
@@ -289,7 +289,7 @@ class Shape {
         }
 
 
-        setMouseInsideChildPointMarker(node, child, type, nodeIndex) {
+        function setMouseInsideChildPointMarker(node, child, type, nodeIndex) {
 
             if (child.pointMarker.isMouseInside()) {
                 if (child.pointMarker.isMouseAlreadyInside()) {
@@ -322,7 +322,7 @@ class Shape {
             
         }
 
-        overlapHandler() {
+        function overlapHandler() {
             //console.log(`mouse inside how many: ${this.state.mouseInsideHowManyPointMarkers}`);
             
             // going into an overlap
@@ -333,7 +333,7 @@ class Shape {
         }
 
             // helper for overlapHandler()
-            deactivateExistingNode() {
+            function deactivateExistingNode() {
                 //deactivate existing node 
                 if (this.state.activeNodeIndex !== -1) {
                     this.getExistingActiveNode().deactivate();
@@ -350,12 +350,12 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    draw() {
+    function draw() {
         let draw = new Draw();
         draw.drawShape(this);
     }
 
-    drawMarkUp() {
+    function drawMarkUp() {
         let node; 
         let draw = new Draw();
 
@@ -371,29 +371,29 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    translatePath(x,y) {
+    function translatePath(x,y) {
         this.path = g.translate(this.path, {x: x, y: y});
     }
 
-    dragShape(x, y) {
+    function dragShape(x, y) {
         let distance = this.getMouseDraggedDistance(x,y);
         this.translatePath(distance.x, distance.y);
         this.offsetAllVertices(distance.x, distance.y);
         this.updateClickedPosition(x,y);
     }
 
-    offsetAllVertices(dx, dy) {
+    function offsetAllVertices(dx, dy) {
         for (let i = 0; i < this.verticesArray.length; i++) {
             this.moveOrOffsetVertex( dx, dy, i, false );
         }
     }
 
-    updateClickedPosition(x, y) {
+    function updateClickedPosition(x, y) {
         this.clickedX = x;
         this.clickedY = y;
     }
 
-    getMouseDraggedDistance(x, y) {
+    function getMouseDraggedDistance(x, y) {
         let dx = x - this.clickedX;
         let dy = y - this.clickedY;
         return {x: dx, y: dy};
