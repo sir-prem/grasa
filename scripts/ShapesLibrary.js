@@ -16,10 +16,8 @@ class ShapesLibrary {
 
         else {
             // reconstruct ShapesArray from DB
-
-            JSONShapesArray = JSONFromDB.shapesArray;
-        
-            for (i = 0; i < JSONShapesArray.length; i++) {
+			JSONShapesArray = JSONFromDB.shapesArray;
+			for (i = 0; i < JSONShapesArray.length ; i++) {
 
                 JSONShape = JSONShapesArray[i];
 

@@ -1,6 +1,12 @@
 var shapesLibrary;
 var load;
 var shape1, shape2, shape3;
+var global_fill_hue, global_fill_saturation, global_fill_value;
+var global_stroke_hue, global_stroke_saturation, global_stroke_value;
+var global_stroke_width;
+var fill_hue_slider, fill_saturation_slider, fill_value_slider, fill_alpha_slider;
+var stroke_hue_slider, stroke_saturation_slider, stroke_value_slider;
+var stroke_width_slider;
 
 function setup() {
     p5.disableFriendlyErrors = true; // disables FES
@@ -83,12 +89,30 @@ function setup() {
         shapesLibrary.add(shape3);
         */
 
+	global_fill_hue = 0;
+
+	//draw sliders
+	fill_hue_slider = 			createSlider(0, 100, global_fill_hue, 1);
+	fill_saturation_slider = 	createSlider(0, 100, global_fill_saturation, 1);
+	fill_value_slider = 		createSlider(0, 100, global_fill_value, 1);
+	fill_alpha_slider =			createSlider(0, 100, global_fill_alpha, 1);
+
+  	fill_hue_slider.position(width-200, 220);
+  	
+
+	fill_hue_slider.style('width', '100px');
+
+
 }
 
 function draw() { 
-    drawBackground();
+	clear();
+		drawBackground();
     drawUIOverlay();
-    if (shapesLibrary.shapesArray.length > 0) {
+
+	global_fill_hue = slider.value();
+
+        if (shapesLibrary.shapesArray.length > 0) {
         shapesLibrary.draw();
     }
 }
@@ -103,15 +127,39 @@ function mouseMoved() {
 }
 
 function mousePressed() {
+	let new_shape_fill_hue;
     if (shapesLibrary.shapesArray.length > 0) {
        shapesLibrary.mousePress();
     }
+	if (mode == 'CREATE' ) {
+		if (nextAction == 'startPoint') {
+			console.log(`global fill hue is: ${global_fill_hue}`);
+			new_shape_fill_hue = g.hslColor(global_fill_hue/100, 0.5, 0.8, 0.5);
+			newShape = new Shape(new_shape_fill_hue, 'indianred',2);	
+			newShape.addNode(mouseX, mouseY, 'start');
+		}
+		else if (nextAction == 'addLine') {
+			newShape.addNode( mouseX, mouseY, 'line');
+		}
+		else if (nextAction === 'addBezier') {
+			newShape.addNode( mouseX, mouseY, 'bezier');
+		}
+		else if (nextAction === 'addQuad') {
+			newShape.addNode (mouseX, mouseY, 'quad');
+		}
+		else if (nextAction == 'closeShape') {
+			newShape.closeGPath();
+			shapesLibrary.add(newShape);
+			mode = 'SCULPT';
+		}
+	}
+
 }
 
 function mouseDragged() {
     if (shapesLibrary.shapesArray.length > 0) {
        shapesLibrary.mouseDrag();
-    }
+    }     
 }
 
 function mouseReleased() {
@@ -130,6 +178,14 @@ function keyPressed() {
         mode = 'CREATE';
         nextAction = 'addLine';
     }
+	else if (key === 'b') {
+		mode = 'CREATE';
+		nextAction = 'addBezier';
+	}
+	else if (key === 'q') {
+		mode = 'CREATE';
+		nextAction = 'addQuad';
+	}	
     else if (key === 'x') {
         mode = 'CREATE';
         nextAction = 'closeShape';
@@ -155,17 +211,23 @@ function drawUIOverlay() {
     // draw header/logo
     fill('ivory');
     textSize(18);
-    text(`grasa v1.0`, width-135, 30);
+    text(`GRASA v1.0`, width-250, 30);
     textSize(10);
-    text(`An abstract shape`, width-135, 45);
-    text(`ideation tool`, width-135, 55);
+    text(`An abstract shape`, width-250, 45);
+    text(`ideation tool`, width-250, 55);
 
     // draw mode and next action
     fill('lightseagreen');
     textSize(11);
-    text(`${key} - ${mode} mode`, width-180, 130);
-    text(`next action: ${nextAction}`, width-180, 145);
-}
+    text(`${key} - ${mode} mode`, width-250, 130);
+    text(`next action: ${nextAction}`, width-250, 145);
+
+	text(`FILL COLOUR`, width-250, 170);
+	text(`Hue`, width-250, 185);
+	c = color(`hsla(${global_fill_hue}, 50%, 50%, 1)`);
+	fill(c);
+	rect(width-50, 165, 35, 35); // Draw rectangle
+	}
 
 function drawBackground() {
     // hue (0-360)
