@@ -1,11 +1,11 @@
 var shapesLibrary;
 var load;
 var shape1, shape2, shape3;
-var global_fill_hue, global_fill_saturation, global_fill_value;
+var global_fill_hue, global_fill_saturation, global_fill_value, global_fill_alpha;
 var global_stroke_hue, global_stroke_saturation, global_stroke_value;
 var global_stroke_width;
 var fill_hue_slider, fill_saturation_slider, fill_value_slider, fill_alpha_slider;
-var stroke_hue_slider, stroke_saturation_slider, stroke_value_slider;
+var stroke_hue_slider, stroke_saturation_slider, stroke_value_slider, stroke_alpha_slider;
 var stroke_width_slider;
 
 function setup() {
@@ -34,8 +34,8 @@ function setup() {
     //
     //------------------------------------------------------------------------
 
-    socket = io.connect('http://localhost:4000');
-    //socket = io.connect('https://boiling-river-33690.herokuapp.com');
+    socket = io.connect('http://localhost:4000' || 'https://viridian-marked-fork.glitch.me');
+    //socket = io.connect('https://viridian-marked-fork.glitch.me');
 
 
     socket.on(`load req recd`, (JSONLoadData) => {
@@ -89,20 +89,53 @@ function setup() {
         shapesLibrary.add(shape3);
         */
 
+	// set initial values for colour sliders
 	global_fill_hue = 0;
+	global_fill_saturation = 50;
+	global_fill_value = 50;
+	global_fill_alpha = 80;
+	
+	global_stroke_hue = 100;
+	global_stroke_saturation = 50;
+	global_stroke_value = 50;
+	global_stroke_alpha = 80;
+
+	global_stroke_width = 5;
 
 	//draw sliders
-	fill_hue_slider = 			createSlider(0, 100, global_fill_hue, 1);
+	fill_hue_slider = 			createSlider(0, 360, global_fill_hue, 1);
 	fill_saturation_slider = 	createSlider(0, 100, global_fill_saturation, 1);
 	fill_value_slider = 		createSlider(0, 100, global_fill_value, 1);
 	fill_alpha_slider =			createSlider(0, 100, global_fill_alpha, 1);
 
-  	fill_hue_slider.position(width-200, 220);
-  	
+  	fill_hue_slider.position(width-165, 220);
+  	fill_saturation_slider.position(width-165,240);
+	fill_value_slider.position(width-165,260);
+	fill_alpha_slider.position(width-165, 280);
 
 	fill_hue_slider.style('width', '100px');
+	fill_saturation_slider.style('width', '100px');
+	fill_value_slider.style('width', '100px');
+	fill_alpha_slider.style('width', '100px');
+	
+	stroke_hue_slider = 			createSlider(0, 360, global_stroke_hue, 1);
+	stroke_saturation_slider = 	createSlider(0, 100, global_stroke_saturation, 1);
+	stroke_value_slider = 		createSlider(0, 100, global_stroke_value, 1);
+	stroke_alpha_slider =			createSlider(0, 100, global_stroke_alpha, 1);
 
+  	stroke_hue_slider.position(width-165, 350);
+  	stroke_saturation_slider.position(width-165,370);
+	stroke_value_slider.position(width-165,390);
+	stroke_alpha_slider.position(width-165, 410);
 
+	stroke_hue_slider.style('width', '100px');
+	stroke_saturation_slider.style('width', '100px');
+	stroke_value_slider.style('width', '100px');
+	stroke_alpha_slider.style('width', '100px');
+
+	stroke_width_slider = createSlider(0, 25, global_stroke_width, 1);
+	stroke_width_slider.position(width-165, 430);
+	stroke_width_slider.style('width', '100px');
 }
 
 function draw() { 
@@ -110,7 +143,17 @@ function draw() {
 		drawBackground();
     drawUIOverlay();
 
-	global_fill_hue = slider.value();
+	global_fill_hue = fill_hue_slider.value();
+	global_fill_saturation = fill_saturation_slider.value();
+	global_fill_value 		= fill_value_slider.value();
+	global_fill_alpha		= fill_alpha_slider.value();
+	
+	global_stroke_hue = stroke_hue_slider.value();
+	global_stroke_saturation = stroke_saturation_slider.value();
+	global_stroke_value 		= stroke_value_slider.value();
+	global_stroke_alpha		= stroke_alpha_slider.value();
+
+	global_stroke_width = stroke_width_slider.value();
 
         if (shapesLibrary.shapesArray.length > 0) {
         shapesLibrary.draw();
@@ -134,8 +177,23 @@ function mousePressed() {
 	if (mode == 'CREATE' ) {
 		if (nextAction == 'startPoint') {
 			console.log(`global fill hue is: ${global_fill_hue}`);
-			new_shape_fill_hue = g.hslColor(global_fill_hue/100, 0.5, 0.8, 0.5);
-			newShape = new Shape(new_shape_fill_hue, 'indianred',2);	
+			new_shape_fill_colour = g.hslColor(
+										global_fill_hue/360,
+										global_fill_saturation/100, 
+										global_fill_value/100, 
+										global_fill_alpha/100);
+
+			new_shape_stroke_colour = g.hslColor(
+										global_stroke_hue/360,
+										global_stroke_saturation/100, 
+										global_stroke_value/100, 
+										global_stroke_alpha/100);
+
+
+			newShape = new Shape(	new_shape_fill_colour, 
+									new_shape_stroke_colour,
+									global_stroke_width);	
+
 			newShape.addNode(mouseX, mouseY, 'start');
 		}
 		else if (nextAction == 'addLine') {
@@ -151,6 +209,8 @@ function mousePressed() {
 			newShape.closeGPath();
 			shapesLibrary.add(newShape);
 			mode = 'SCULPT';
+			fill_hue_slider.value(0);
+			fill_saturation_slider.value(50);
 		}
 	}
 
@@ -217,16 +277,46 @@ function drawUIOverlay() {
     text(`ideation tool`, width-250, 55);
 
     // draw mode and next action
-    fill('lightseagreen');
+    //fill('lightseagreen');
     textSize(11);
-    text(`${key} - ${mode} mode`, width-250, 130);
-    text(`next action: ${nextAction}`, width-250, 145);
+    text(`${key} - ${mode} mode`, width-250, 650);
+    text(`next action: ${nextAction}`, width-250, 670);
 
-	text(`FILL COLOUR`, width-250, 170);
+	text(`FILL`, width-250, 165);
 	text(`Hue`, width-250, 185);
-	c = color(`hsla(${global_fill_hue}, 50%, 50%, 1)`);
-	fill(c);
-	rect(width-50, 165, 35, 35); // Draw rectangle
+	text(`Saturation`, width-250, 205);
+	text(`Lightness`, width-250, 225);
+	text(`Opacity`, width-250, 245);
+	
+	text(`STROKE`, width-250, 295);
+	text(`Hue`, width-250, 315);
+	text(`Saturation`, width-250, 335);
+	text(`Lightness`, width-250, 355);
+	text(`Opacity`, width-250, 375);
+	text('Width', width-250, 395);
+
+	global_fill_alpha_decimal = global_fill_alpha/100;
+
+	fill_colour = color(`hsla(${global_fill_hue}, 
+				${global_fill_saturation}%, 
+				${global_fill_value}%, 
+				${global_fill_alpha_decimal})`);
+	//rect(width-50, 190, 45, 45); // Draw rectangle
+
+	global_stroke_alpha_decimal = global_stroke_alpha/100;
+
+	stroke_colour = color(`hsla(${global_stroke_hue}, 
+				${global_stroke_saturation}%, 
+				${global_stroke_value}%, 
+				${global_stroke_alpha_decimal})`);
+
+	fill(fill_colour);
+	stroke(stroke_colour);
+	strokeWeight(global_stroke_width);
+	
+	rect(width-120, 100, 45, 45); // Draw rectangle
+	noStroke();
+
 	}
 
 function drawBackground() {
