@@ -1,6 +1,5 @@
 var shapesLibrary;
 var load;
-//var shape1, shape2, shape3;
 var cp;
 var sliderUI;
 var newShape;
@@ -85,7 +84,8 @@ function setup() {
         shapesLibrary.add(shape2);
         shapesLibrary.add(shape3);
         */
-  
+
+ 	// add Colour Sliders 
 	sliderUI = new SliderUI();
 
 	sliderUI.createFillSliders();
@@ -103,20 +103,19 @@ function draw() {
 	drawBackground();
     drawUIOverlay();
 
-
 	sliderUI.updateValues();
 	
 	if (shapesLibrary.shapesArray.length > 0) {
         shapesLibrary.draw();
     }
 	
-	if (typeof cp !== 'undefined') {
-		circle(cp.x, cp.y, 20);
-	}
-
 	if (typeof newShape !== 'undefined') {
 		newShape.draw();
 		newShape.drawMarkUp();
+	}	
+
+	if (typeof cp !== 'undefined') {
+		circle(cp.x, cp.y, 20);
 	}
 }
 
@@ -164,14 +163,16 @@ function mousePressed() {
 			newShape.addNode (mouseX, mouseY, 'quad');
 		}
 		else if (nextAction == 'closeShape') {
-			newShape.closeGPath();
-			shapesLibrary.add(newShape);
 
 			cp = g.centerPoint(newShape.gPath);
-			console.log(`center point is: ${cp}`);
-			console.log(`center point X is: ${cp.x}`);
-			console.log(`center point Y is: ${cp.y}`);
-
+			//console.log(`center point is: ${cp}`);
+			///console.log(`center point X is: ${cp.x}`);
+			//console.log(`center point Y is: ${cp.y}`);
+			
+			newShape.addNode ( cp.x, cp.y, 'centre');
+			
+			newShape.closeGPath();
+			shapesLibrary.add(newShape);
 
 			mode = 'SCULPT';
 			sliderUI.fill_hue_slider.value(0);

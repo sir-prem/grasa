@@ -3,6 +3,8 @@ class Vertex {
     constructor(x, y) {
         this.x = x;
         this.y = y;
+        this.initialX = x;
+        this.initialY = y;
         this.pointMarker = new PointMarker( 
                             x, y,
                             config.defaultNodeStyle.fill,
@@ -20,13 +22,17 @@ class Vertex {
         //move handles if required
         switch(node.type) {
             case 'bezier':  // for 'bezier' only
-                console.log(`Vertex moveTo() > case bezier: mouseDraggedDist is (${node.state.mouseState.draggedDistance.dx},${node.state.mouseState.draggedDistance.dy})`);
+                console.log(`Vertex moveTo() > case bezier: mouseDraggedDist is 
+					(${node.state.mouseState.draggedDistance.dx},
+					 ${node.state.mouseState.draggedDistance.dy})`);
                 node.handlesArray[1].offsetPosition(
                                             node.state.mouseState.draggedDistance.dx,
                                             node.state.mouseState.draggedDistance.dy
                                         );
             case 'quad': // for 'quad' and 'bezier'
-                console.log(`Vertex moveTo() > case quad: mouseDraggedDist is (${node.state.mouseState.draggedDistance.dx},${node.state.mouseState.draggedDistance.dy})`);
+                console.log(`Vertex moveTo() > case quad: mouseDraggedDist is 
+					(${node.state.mouseState.draggedDistance.dx},
+					 ${node.state.mouseState.draggedDistance.dy})`);
                 node.handlesArray[0].offsetPosition(
                                             node.state.mouseState.draggedDistance.dx,
                                             node.state.mouseState.draggedDistance.dy

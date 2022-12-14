@@ -2,9 +2,10 @@ class Node {
 
     constructor(x, y, type) {
         this.vertex = new Vertex(x, y);
-        this.type = type;   // either 'start', 'line', 'bezier', 'quad'
+        this.type = type;   // either 'start', 'line', 'bezier', 'quad', 'centre'
         this.handlesArray = [];
         this.state = new NodeState();
+		this.centrePoint = new CentrePoint(x, y);
 
     }
 
@@ -51,6 +52,9 @@ class Node {
 
         this.vertex.pointMarker.setColour(
                                         style );
+                                        
+        this.centrePoint.pointMarker.setColour(
+                                        style );
 
         if (this.type === 'bezier' || this.type === 'quad') {
 
@@ -69,6 +73,8 @@ class Node {
         switch(whichChild) {
             case 'vertex':
                 this.vertex.pointMarker.setColour(style );   break;
+            case 'centre':
+                this.centrePoint.pointMarker.setColour(style );   break;
             case 'handle1':
                 this.handlesArray[0].pointMarker.setColour(style );   break;
             case 'handle2':
@@ -76,7 +82,7 @@ class Node {
         }
     }
 
-    drag(mouseX, mouseY) {
+    drag(mouseX, mouseY, shape) {
 
         //check which child active
         let activeChild = this.state.whichChildIsActive;
@@ -105,6 +111,9 @@ class Node {
                 // move handle to reshape the curve (quad or bezier)
                 console.log(`dragging ${activeChild}`);
                 this.handlesArray[1].moveTo(mouseX, mouseY);    break;
+                
+            case 'centre':
+            	this.centrePoint.moveTo(mouseX, mouseY, shape);		break;
 
         }
 
@@ -139,9 +148,11 @@ class Node {
         console.log(`*      Vertex:             ( ${Math.trunc(this.vertex.x)}, ${Math.trunc(this.vertex.y)} )`);
         switch (this.type) {
             case 'bezier':
-                console.log(`*      Handle2:                ( ${Math.trunc(this.handlesArray[1].x)}, ${Math.trunc(this.handlesArray[1].y)} )`);
+                console.log(`*      Handle2:                ( 	${Math.trunc(this.handlesArray[1].x)}, 
+																${Math.trunc(this.handlesArray[1].y)} )`);
             case 'quad':
-                console.log(`*      Handle1:                ( ${Math.trunc(this.handlesArray[0].x)}, ${Math.trunc(this.handlesArray[0].y)} )`);
+                console.log(`*      Handle1:                ( 	${Math.trunc(this.handlesArray[0].x)}, 
+																${Math.trunc(this.handlesArray[0].y)} )`);
                 break;
         }
     }

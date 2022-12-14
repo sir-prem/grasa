@@ -26,7 +26,7 @@ class Shape {
 
     printAllNodeDetails() {
         console.log(`******************************************`);
-        console.log(`*      SHAPE'S NODE DETAILS              *`);
+        console.log(`*      SHAPE^S NODE DETAILS              *`);
         console.log(`*                                        *`);
 
         for (let i = 0; i < this.nodesArray.length; i++) {
@@ -61,6 +61,8 @@ class Shape {
                 handleCoords = this.getHandleCoords(newNode);
                 newNode = this.addHandlesToNode(newNode, handleCoords, type);
                 this.addBezierOrQuadSegment(newNode, handleCoords, type);   break;
+            case 'centre':
+            	this.addCentrePoint(newNode);		break;
         }
         this.nodesArray.push(newNode);
     }
@@ -91,6 +93,10 @@ class Shape {
                         handleCoords.handle1Coords.y,
                         node.vertex.x,  node.vertex.y );        break;
             }
+        }
+        
+        addCentrePoint (newNode) {
+        	return;	
         }
 
         getHandleCoords(node) {
@@ -138,7 +144,7 @@ class Shape {
             }
     
     closeGPath() {
-        this.gPath.closePath();
+		this.gPath.closePath();
     }
 
 
@@ -201,7 +207,7 @@ class Shape {
         
     }
 
-        // HELPERS for mouseOver()
+       // HELPERS for mouseOver()
 
         activeNodeExists() {
             if (this.state.activeNodeIndex >= 0) {
@@ -215,8 +221,6 @@ class Shape {
         getExistingActiveNode() {
             return this.nodesArray[this.state.activeNodeIndex];
         }
-
-
 
     mousePress(mouseX, mouseY) {
 
@@ -241,7 +245,7 @@ class Shape {
         // check for EXISTING active node
         if ( this.activeNodeExists() ) {
             existingActiveNode = this.getExistingActiveNode();
-            existingActiveNode.drag(mouseX, mouseY);
+            existingActiveNode.drag(mouseX, mouseY, this);
             this.recreateGPath();
         }
     }
@@ -273,17 +277,22 @@ class Shape {
                 node = this.nodesArray[i];
 
                 // check mouse inside VERTEX
-                this.setMouseInsideChildPointMarker(node, node.vertex, 'vertex', i);
-
-                // check mouse inside HANDLE 1
-                if (node.type === 'quad' || node.type === 'bezier') {
-                    this.setMouseInsideChildPointMarker(node, node.handlesArray[0], 'handle1', i);
-                }
-                
-                // check mouse inside HANDLE 2
-                if (node.type === 'bezier') {
-                    this.setMouseInsideChildPointMarker(node, node.handlesArray[1], 'handle2', i);
-                }
+				if (node.type !== 'centre') {
+					this.setMouseInsideChildPointMarker(node, node.vertex, 'vertex', i);
+					
+					// check mouse inside HANDLE 1
+					if (node.type === 'quad' || node.type === 'bezier') {
+	                    this.setMouseInsideChildPointMarker(node, node.handlesArray[0], 'handle1', i);
+	                }
+	                
+	                // check mouse inside HANDLE 2
+					if (node.type === 'bezier') {
+	                    this.setMouseInsideChildPointMarker(node, node.handlesArray[1], 'handle2', i);
+	                }
+				}
+				else {
+					this.setMouseInsideChildPointMarker(node, node.centrePoint, 'centre', i);
+				}
             } // end for loop
 
         }
@@ -293,10 +302,10 @@ class Shape {
 
             if (child.pointMarker.isMouseInside()) {
                 if (child.pointMarker.isMouseAlreadyInside()) {
-                    console.log(`inside node ${nodeIndex}'s ${type}`);
+                    console.log(`inside node ${nodeIndex}s ${type}`);
                 }
                 else { // mouse just entering
-                    console.log(`entering node ${nodeIndex}'s ${type}`);
+                    console.log(`entering node ${nodeIndex}s ${type}`);
                     child.pointMarker.setMouseEntered();
                     this.state.mouseInsideHowManyPointMarkers++;
                 }
@@ -309,7 +318,7 @@ class Shape {
             else {
                 // mouse is exiting the point marker
                 if (child.pointMarker.isMouseAlreadyInside()) {
-                    console.log(`exiting node ${nodeIndex}'s ${type}`);
+                    console.log(`exiting node ${nodeIndex}s ${type}`);
                     child.pointMarker.setMouseExited();
                     this.state.mouseInsideHowManyPointMarkers--;
                     if (this.state.mouseInsideHowManyPointMarkers == 0) {
@@ -364,47 +373,6 @@ class Shape {
             draw.markUpNode(node);
         }
     }
-
-    //===================================================================
-    //
-    //      TRANSLATE SHAPE FUNCTIONS
-    //
-    //--------------------------------------------------------------------
-
-    translatePath(x,y) {
-        this.path = g.translate(this.path, {x: x, y: y});
-    }
-
-    dragShape(x, y) {
-        let distance = this.getMouseDraggedDistance(x,y);
-        this.translatePath(distance.x, distance.y);
-        this.offsetAllVertices(distance.x, distance.y);
-        this.updateClickedPosition(x,y);
-    }
-
-    offsetAllVertices(dx, dy) {
-        for (let i = 0; i < this.verticesArray.length; i++) {
-            this.moveOrOffsetVertex( dx, dy, i, false );
-        }
-    }
-
-    updateClickedPosition(x, y) {
-        this.clickedX = x;
-        this.clickedY = y;
-    }
-
-    getMouseDraggedDistance(x, y) {
-        let dx = x - this.clickedX;
-        let dy = y - this.clickedY;
-        return {x: dx, y: dy};
-    }
-
-
-
-    //replaceVertexByUpdated(vertex, index) {
-    //    this.verticesArray.splice(index, 1, vertex);
-    //}
-
     
     
 }

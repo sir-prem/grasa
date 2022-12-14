@@ -18,20 +18,25 @@ class Draw {
     }
 
     pointMarkers(node) {
-        let vertex = node.vertex;
         let handle1, handle2;
 
-        vertex.pointMarker.draw();
-
-        if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
-            handle1 = node.handlesArray[0];
-            handle1.pointMarker.draw();
-        }
-
-        if (node.type === 'bezier') { // node has 2nd handle
-            handle2 = node.handlesArray[1];
-            handle2.pointMarker.draw();
-        }
+		if (node.type !== 'centre') {
+        	node.vertex.pointMarker.draw();
+        	if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
+	            handle1 = node.handlesArray[0];
+	            handle1.pointMarker.draw();
+	        }
+	
+	        if (node.type === 'bezier') { // node has 2nd handle
+	            handle2 = node.handlesArray[1];
+	            handle2.pointMarker.draw();
+	        }
+    	}
+    	else {
+			node.centrePoint.pointMarker.draw();    	
+    	}
+		
+        
 
     }
 

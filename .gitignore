@@ -2,3 +2,4 @@ grasa_code.pdf
 .env
 node_modules/**
 notes
+*.swp

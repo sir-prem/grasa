@@ -2,7 +2,7 @@ class NodeState {
 
     constructor() {
         this.isActive = false;
-        this.whichChildIsActive = 'none';  // either 'none', 'vertex', 'handle1', 'handle2'
+        this.whichChildIsActive = 'none';  // either 'none', 'vertex', 'handle1', 'handle2', 'centre'
         this.mouseState = new MouseState('node');
     }
 
