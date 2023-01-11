@@ -12,10 +12,7 @@ class Shape {
     this.gPathStyle = new GPathStyle(style);
     this.setGPathStyle();
     
-    //this.applyColourSchemeToPath();
-    
     this.state = new ShapeState();
-    
   }
   
     //===================================================================
@@ -24,14 +21,15 @@ class Shape {
     //
     //--------------------------------------------------------------------
 
-    printAllNodeDetails() {
+    printNodeData() {
         console.log(`******************************************`);
-        console.log(`*      SHAPE^S NODE DETAILS              *`);
+        console.log(`*      SHAPE: NODE DATA                  *`);
         console.log(`*                                        *`);
 
         for (let i = 0; i < this.nodesArray.length; i++) {
             console.log(`*----------------------------------------*`);
             console.log(`*      Node ${i+1}`);
+			console.log(`* 		Type: ${this.nodesArray[i].type}`);
             console.log(`*      -----------`);
             this.nodesArray[i].printDetails();
         }
@@ -44,104 +42,105 @@ class Shape {
         this.gPath = GPathStyle.set(this.gPath, this.gPathStyle);
     }
 
-    addNode(mouseClickX, mouseClickY, type) {
-        let newNode = new Node(mouseClickX, mouseClickY, type);
+    addNode(mouseClickX, mouseClickY, nodeType, vertexType) {
+        let newNode = new Node(mouseClickX, mouseClickY, nodeType, vertexType);
         let handleCoords;
     
-        switch(type) {
+		if (nodeType === 'vertex') {
+			switch(vertexType) {
 
-            case 'start':
-                this.addStartPoint(newNode);     break;
-        
-            case 'line':
-                this.addLineSegment(newNode);     break;
-    
-            case 'bezier':
-            case 'quad':
-                handleCoords = this.getHandleCoords(newNode);
-                newNode = this.addHandlesToNode(newNode, handleCoords, type);
-                this.addBezierOrQuadSegment(newNode, handleCoords, type);   break;
-            case 'centre':
-            	this.addCentrePoint(newNode);		break;
-        }
+				case 'start':
+					this.addStartPoint(newNode);     break;
+			
+				case 'line':
+					this.addLineSegment(newNode);     break;
+		
+				case 'bezier':
+				case 'quad':
+					handleCoords = this.getHandleCoords(newNode);
+					newNode = this.addHandles(newNode, handleCoords, vertexType);
+					this.addBezierOrQuadSegment(newNode, handleCoords, vertexType);   break;
+			}
+		}
+		else if (nodeType === 'centre') {
+			this.addCentrePoint(newNode);
+		}
         this.nodesArray.push(newNode);
     }
 
-        // HELPERS for addNode() 
+	// HELPERS for addNode() 
 
-        addStartPoint(newNode) {
-            this.gPath.moveTo(newNode.vertex.x, newNode.vertex.y);
-        }
+	addStartPoint(newNode) {
+		this.gPath.moveTo(newNode.vertex.x, newNode.vertex.y);
+	}
 
-        addLineSegment(newNode) {
-            this.gPath.lineTo(newNode.vertex.x, newNode.vertex.y);
-        }
+	addLineSegment(newNode) {
+		this.gPath.lineTo(newNode.vertex.x, newNode.vertex.y);
+	}
 
-        addBezierOrQuadSegment(node, handleCoords, type) {
+	addBezierOrQuadSegment(node, handleCoords, vertexType) {
 
-            switch(type) {
-                case 'bezier':
-                    this.gPath.curveTo(  
-                        handleCoords.handle1Coords.x,
-                        handleCoords.handle1Coords.y,
-                        handleCoords.handle2Coords.x,
-                        handleCoords.handle2Coords.y,
-                        node.vertex.x,  node.vertex.y );        break;
-                case 'quad':
-                    this.gPath.quadTo(  
-                        handleCoords.handle1Coords.x,
-                        handleCoords.handle1Coords.y,
-                        node.vertex.x,  node.vertex.y );        break;
-            }
-        }
-        
-        addCentrePoint (newNode) {
-        	return;	
-        }
+		switch(vertexType) {
+			case 'bezier':
+				this.gPath.curveTo(  
+					handleCoords.handle1Coords.x,
+					handleCoords.handle1Coords.y,
+					handleCoords.handle2Coords.x,
+					handleCoords.handle2Coords.y,
+					node.vertex.x,  node.vertex.y );        break;
+			case 'quad':
+				this.gPath.quadTo(  
+					handleCoords.handle1Coords.x,
+					handleCoords.handle1Coords.y,
+					node.vertex.x,  node.vertex.y );        break;
+		}
+	}
+	
+	addCentrePoint (newNode) {
+		return;	
+	}
 
-        getHandleCoords(node) {
-            let currentVertex = node.vertex;
-            let prevVertexCoords = this.getPreviousNodeVertexCoordinates();
-            let handleCoords = Vertex.calculateInitialHandleCoordinates(
-                                                            currentVertex.x, 
-                                                            currentVertex.y, 
-                                                            prevVertexCoords.x, 
-                                                            prevVertexCoords.y);
-            return handleCoords;
-        }
+	getHandleCoords(node) {
+		let currentVertex = node.vertex;
+		let prevVertexCoords = this.getPreviousNodeVertexCoordinates();
+		let handleCoords = Vertex.calculateInitialHandleCoordinates(
+														currentVertex.x, 
+														currentVertex.y, 
+														prevVertexCoords.x, 
+														prevVertexCoords.y);
+		return handleCoords;
+	}
 
-        addHandlesToNode(node, handleCoords, type) {
-            
-            // first handle
-            let newVertexHandle1 = new Handle( 
-                                        handleCoords.handle1Coords.x, 
-                                        handleCoords.handle1Coords.y,
-                                        1 
-                                        );
-            node.handlesArray.push(newVertexHandle1);
+	addHandles(node, handleCoords, vertexType) {
+		
+		// first handle
+		let newVertexHandle1 = 
+			new Handle(	handleCoords.handle1Coords.x, 
+						handleCoords.handle1Coords.y,
+							1 	);
+		node.vertex.handle1 = newVertexHandle1;
 
-            // second handle - only required for bezier curves
-            if (type === 'bezier') {
-                let newVertexHandle2 = new Handle( 
-                                            handleCoords.handle2Coords.x, 
-                                            handleCoords.handle2Coords.y,
-                                            2 
-                                            );
-                node.handlesArray.push(newVertexHandle2);
-            }
+		// second handle
+		if (vertexType === 'bezier') {
+			let newVertexHandle2 = 
+				new Handle( handleCoords.handle2Coords.x, 
+							handleCoords.handle2Coords.y,
+							 2	);
+			node.vertex.handle2 = newVertexHandle2;
+		}
 
-            return node;
-        }
+		return node;
+	}
 
-            // HELPER for getHandleCoords() 
-            getPreviousNodeVertexCoordinates() {
-                let prevNodeIndex = this.nodesArray.length - 1;
-                let prevNode = this.nodesArray[prevNodeIndex];
-                return {
-                    x: prevNode.vertex.x,
-                    y: prevNode.vertex.y
-                }
-            }
+	// HELPER for getHandleCoords() 
+	getPreviousNodeVertexCoordinates() {
+		let prevNodeIndex = this.nodesArray.length - 1;
+		let prevNode = this.nodesArray[prevNodeIndex];
+		return {
+			x: prevNode.vertex.x,
+			y: prevNode.vertex.y
+		}
+	}
     
     closeGPath() {
 		this.gPath.closePath();
@@ -156,7 +155,7 @@ class Shape {
 
     // Reconstructs shape from moved vertices
     recreateGPath() {
-        let node, handleCoords;
+        let node, vertex, handleCoords, i;
         this.gPath = new g.Path();
 
         //initialise handleCoords
@@ -165,23 +164,24 @@ class Shape {
             handle2Coords: { x: 0, y: 0 }
         };
         
-        for (let i = 0; i < this.nodesArray.length; i++) {
+        for (i = 0; i < this.nodesArray.length-1; i++) {
             node = this.nodesArray[i];
+			//node.printDetails();
+			vertex = node.vertex;
             
-            switch(node.type) {
+            switch(vertex.type) {
 
                 case 'start':
                     this.addStartPoint(node);         break;
                 case 'line':
                     this.addLineSegment(node);         break; 
                 case 'bezier':
-                    handleCoords.handle2Coords.x = node.handlesArray[1].x;
-                    handleCoords.handle2Coords.y = node.handlesArray[1].y;
+                    handleCoords.handle2Coords.x = vertex.handle2.x;
+                    handleCoords.handle2Coords.y = vertex.handle2.y;
                 case 'quad':
-                    handleCoords.handle1Coords.x = node.handlesArray[0].x;
-                    handleCoords.handle1Coords.y = node.handlesArray[0].y;
-                    this.addBezierOrQuadSegment(node, handleCoords, node.type);  break;
-
+                    handleCoords.handle1Coords.x = vertex.handle1.x;
+                    handleCoords.handle1Coords.y = vertex.handle1.y;
+                    this.addBezierOrQuadSegment(node, handleCoords, vertex.type);  break;
             }
             
         }
@@ -189,6 +189,34 @@ class Shape {
         this.setGPathStyle();
     }
 
+	getCentreNode() {
+		return this.nodesArray[this.nodesArray.length-1];
+	}
+
+	dragShape(x, y) {
+		
+		let centreNode = this.getCentreNode();
+		console.log('dragShape() initiated');
+		let draggedDistanceX = x - centreNode.centrePoint.initialX;
+		let draggedDistanceY = y - centreNode.centrePoint.initialY;
+		let new_x_coordinate, new_y_coordinate;
+													 
+		for (let i= 0; i < this.nodesArray.length; i++) {
+			let node = this.nodesArray[i];
+			if (node.type === 'vertex') {
+				new_x_coordinate = node.vertex.initialX + draggedDistanceX;
+				new_y_coordinate = node.vertex.initialY + draggedDistanceY;
+				 node.vertex.moveTo(new_x_coordinate,
+				 					new_y_coordinate,
+				 					node);
+			}
+			else if (node.type === 'centre') {
+				centreNode.centrePoint.x = x;
+				centreNode.centrePoint.y = y;
+				centreNode.centrePoint.pointMarker.updatePosition(x,y);
+			}
+		}
+	}
 
     //===================================================================
     //
@@ -203,7 +231,7 @@ class Shape {
     mouseOver() {
 
         this.setMouseInsidePointMarkers();
-        this.overlapHandler();
+        this.handleOverlaps();
         
     }
 
@@ -218,20 +246,20 @@ class Shape {
             }
         }
 
-        getExistingActiveNode() {
+        getActiveNode() {
             return this.nodesArray[this.state.activeNodeIndex];
         }
 
     mousePress(mouseX, mouseY) {
 
-        let existingActiveNode;
+        let activeNode;
 
         // check for EXISTING active node
         if ( this.activeNodeExists() ) {
-            existingActiveNode = this.getExistingActiveNode();
-            existingActiveNode.setStyleMouseClick();
-            existingActiveNode.state.mouseState.clickedPoint.set(mouseX,mouseY);
-            this.printAllNodeDetails();
+            activeNode = this.getActiveNode();
+            activeNode.setStyleMouseClick();
+            activeNode.state.mouseState.clickedPoint.set(mouseX,mouseY);
+            this.printNodeData();
         }
         else { // mouse clicked in empty space
             return; // do nothing
@@ -240,26 +268,36 @@ class Shape {
 
     mouseDrag(mouseX, mouseY) {
 
-        let existingActiveNode;
+        let activeNode;
 
-        // check for EXISTING active node
         if ( this.activeNodeExists() ) {
-            existingActiveNode = this.getExistingActiveNode();
-            existingActiveNode.drag(mouseX, mouseY, this);
-            this.recreateGPath();
+            activeNode = this.getActiveNode();
+
+			if (activeNode.type === 'vertex') {
+				activeNode.drag(mouseX, mouseY, this);
+			}
+			else if (activeNode.type === 'centre') {
+				this.dragShape( mouseX, mouseY);
+			}
+			//centreNode.centrePoint.resetInitialPosition();
+			//this.recreateGPath();
         }
     }
 
     mouseRelease() {
 
-        let existingActiveNode;
+        let activeNode;
 
         // check for EXISTING active node
         if ( this.activeNodeExists() ) {
-            existingActiveNode = this.getExistingActiveNode();
-            existingActiveNode.setStyleMouseOver();
-            existingActiveNode.dragRelease();
-            this.printAllNodeDetails();
+            activeNode = this.getActiveNode();
+            activeNode.setStyleMouseOver();
+            if (activeNode.type === 'vertex') 
+				activeNode.dragRelease();
+			else if (activeNode.type === 'centre')
+				this.dragShapeRelease();
+            this.printNodeData();
+			//return this;
         }
         else { // mouse released in empty space
             return; // do nothing
@@ -269,6 +307,11 @@ class Shape {
 
         // HELPERS for mouse action methods
 
+		dragShapeRelease() {
+			let centreNode = this.getCentreNode();
+			centreNode.centrePoint.resetInitialPosition();
+		}
+	
         setMouseInsidePointMarkers() {
 
             let node;
@@ -276,29 +319,28 @@ class Shape {
             for (let i  = 0; i < this.nodesArray.length; i++) {
                 node = this.nodesArray[i];
 
-                // check mouse inside VERTEX
 				if (node.type !== 'centre') {
-					this.setMouseInsideChildPointMarker(node, node.vertex, 'vertex', i);
+					this.setMouseInsidePointMarker(node, node.vertex, 'vertex', i);
 					
 					// check mouse inside HANDLE 1
 					if (node.type === 'quad' || node.type === 'bezier') {
-	                    this.setMouseInsideChildPointMarker(node, node.handlesArray[0], 'handle1', i);
+	                    this.setMouseInsidePointMarker(node, node.handlesArray[0], 'handle1', i);
 	                }
 	                
 	                // check mouse inside HANDLE 2
 					if (node.type === 'bezier') {
-	                    this.setMouseInsideChildPointMarker(node, node.handlesArray[1], 'handle2', i);
+	                    this.setMouseInsidePointMarker(node, node.handlesArray[1], 'handle2', i);
 	                }
 				}
 				else {
-					this.setMouseInsideChildPointMarker(node, node.centrePoint, 'centre', i);
+					this.setMouseInsidePointMarker(node, node.centrePoint, 'centre', i);
 				}
             } // end for loop
 
         }
 
 
-        setMouseInsideChildPointMarker(node, child, type, nodeIndex) {
+        setMouseInsidePointMarker(node, child, type, nodeIndex) {
 
             if (child.pointMarker.isMouseInside()) {
                 if (child.pointMarker.isMouseAlreadyInside()) {
@@ -331,22 +373,24 @@ class Shape {
             
         }
 
-        overlapHandler() {
-            //console.log(`mouse inside how many: ${this.state.mouseInsideHowManyPointMarkers}`);
+        handleOverlaps() {
+            //console.log(`mouse inside how many: 
+			//			${this.state.mouseInsideHowManyPointMarkers}`);
             
             // going into an overlap
             if(this.state.mouseInsideHowManyPointMarkers > 1) {
-                console.log(`overlapHandler: activeNodeIndex is ${this.state.activeNodeIndex}`);
-                this.deactivateExistingNode();
+                console.log(`handleOverlaps: activeNodeIndex is 
+									${this.state.activeNodeIndex}`);
+                this.deactivateNode();
             }
         }
 
-            // helper for overlapHandler()
-            deactivateExistingNode() {
+            // helper for handleOverlaps()
+            deactivateNode() {
                 //deactivate existing node 
-                if (this.state.activeNodeIndex !== -1) {
-                    this.getExistingActiveNode().deactivate();
-                    this.state.setWhichNodeActive(-1);
+                if (this.state.isActive()) {
+                    this.getActiveNode().deactivate();
+                    this.state.setInactive();
                 }
             }
 

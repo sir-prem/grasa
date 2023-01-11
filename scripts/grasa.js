@@ -109,14 +109,11 @@ function draw() {
         shapesLibrary.draw();
     }
 	
-	if (typeof newShape !== 'undefined') {
+	else if (mode === 'CREATE' && typeof newShape !== 'undefined') {
 		newShape.draw();
 		newShape.drawMarkUp();
 	}	
 
-	if (typeof cp !== 'undefined') {
-		circle(cp.x, cp.y, 20);
-	}
 }
 
 function mouseMoved() {
@@ -132,8 +129,8 @@ function mousePressed() {
     if (shapesLibrary.shapesArray.length > 0) {
        shapesLibrary.mousePress();
     }
-	if (mode == 'CREATE' ) {
-		if (nextAction == 'startPoint') {
+	if (mode === 'CREATE' ) {
+		if (nextAction === 'startPoint') {
 			new_shape_fill_colour = g.hslColor(
 										sliderUI.fill_hue/360,
 										sliderUI.fill_saturation/100, 
@@ -151,25 +148,22 @@ function mousePressed() {
 									new_shape_stroke_colour,
 									sliderUI.stroke_width);	
 
-			newShape.addNode(mouseX, mouseY, 'start');
+			newShape.addNode(mouseX, mouseY, 'vertex', 'start');
 		}
-		else if (nextAction == 'addLine') {
-			newShape.addNode( mouseX, mouseY, 'line');
+		else if (nextAction === 'addLine') {
+			newShape.addNode( mouseX, mouseY, 'vertex', 'line');
 		}
 		else if (nextAction === 'addBezier') {
-			newShape.addNode( mouseX, mouseY, 'bezier');
+			newShape.addNode( mouseX, mouseY, 'vertex', 'bezier');
 		}
 		else if (nextAction === 'addQuad') {
-			newShape.addNode (mouseX, mouseY, 'quad');
+			newShape.addNode (mouseX, mouseY, 'vertex', 'quad');
 		}
-		else if (nextAction == 'closeShape') {
+		else if (nextAction === 'closeShape') {
 
 			cp = g.centerPoint(newShape.gPath);
-			//console.log(`center point is: ${cp}`);
-			///console.log(`center point X is: ${cp.x}`);
-			//console.log(`center point Y is: ${cp.y}`);
 			
-			newShape.addNode ( cp.x, cp.y, 'centre');
+			newShape.addNode ( cp.x, cp.y, 'centre', 'null');
 			
 			newShape.closeGPath();
 			shapesLibrary.add(newShape);
@@ -303,13 +297,13 @@ function setupConfig() {
         strokeWidth:    ellipseStrokeWidth
     };
 
-    mouseInsideChildNode = {
+    mouseInsideNodePoint = {
         fill:           'lightsteelblue',
         stroke:         'lightsteelblue',
         strokeWidth:    ellipseStrokeWidth
     };
 
-    mouseClickChildNode = {
+    mouseClickNodePoint = {
         fill:           'goldenrod',
         stroke:         'lightsteelblue',
         strokeWidth:    ellipseStrokeWidth
@@ -382,8 +376,8 @@ function setupConfig() {
 
     configData = {
         mouseOverNode,
-        mouseInsideChildNode,
-        mouseClickChildNode,
+        mouseInsideNodePoint,
+        mouseClickNodePoint,
         defaultNodeStyle,
         mouseOverVertex,
         mouseOutVertex,

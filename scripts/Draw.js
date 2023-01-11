@@ -12,35 +12,36 @@ class Draw {
         //}
 
     markUpNode(node) {
-        this.pointMarkers(node);
-        this.coordinates(node);
-        this.anyHandleLines(node);
+        this.drawPointMarkers(node);
+		if (node.type === 'vertex') {
+			this.drawVertexAndHandleCoordinates(node);
+			this.drawAnyHandleLines(node);
+		}
     }
 
-    pointMarkers(node) {
+    drawPointMarkers(node) {
         let handle1, handle2;
+		let vertex = node.vertex;
 
-		if (node.type !== 'centre') {
+		if (node.type === 'vertex') {
         	node.vertex.pointMarker.draw();
-        	if(node.type === 'quad' || node.type === 'bezier') { // node has at least 1 handle
-	            handle1 = node.handlesArray[0];
+        	if(vertex.type === 'quad' || 
+				vertex.type === 'bezier') { // node has at least 1 handle
+	            handle1 = vertex.handle1;
 	            handle1.pointMarker.draw();
 	        }
 	
 	        if (node.type === 'bezier') { // node has 2nd handle
-	            handle2 = node.handlesArray[1];
+	            handle2 = vertex.handle2;
 	            handle2.pointMarker.draw();
 	        }
     	}
     	else {
 			node.centrePoint.pointMarker.draw();    	
     	}
-		
-        
-
     }
 
-    coordinates(node) {
+    drawVertexAndHandleCoordinates(node) {
         let vertex = node.vertex;
         let handle1, handle2;
 
@@ -48,21 +49,20 @@ class Draw {
         fill(0, 0, 90);
 
 
-        // draw vertex co-ordinates
         text( 
             this.getCoordinatesString('vertex', -1, vertex.x, vertex.y), 
             vertex.x+2, vertex.y
             );
         
-        switch(node.type) {
+        switch(vertex.type) {
             case 'bezier':
-                handle2 = node.handlesArray[1];
+                handle2 = vertex.handle2;
                 text( 
                     this.getCoordinatesString('handle', 2, handle2.x, handle2.y), 
                     handle2.x+2, handle2.y
                     );
             case 'quad':
-                handle1 = node.handlesArray[0];
+                handle1 = vertex.handle1;
                 text( 
                     this.getCoordinatesString('handle', 1, handle1.x, handle1.y), 
                     handle1.x+2, handle1.y
@@ -80,26 +80,33 @@ class Draw {
             }
         }
 
-    anyHandleLines(node) {
-        switch(node.type) {
+    drawAnyHandleLines(node) {
+        switch(node.vertex.type) {
             case 'start':
             case 'line':
                             break;
             case 'bezier':
-                this.specificHandleLine(node, 2);
+                this.drawSpecificHandleLine(node, 2);
             case 'quad':
-                this.specificHandleLine(node, 1);
+                this.drawSpecificHandleLine(node, 1);
         }
     }
 
         // helper for handleLines()
-        specificHandleLine(node, handleNumber) {
-            let handle = node.handlesArray[handleNumber-1];
+        drawSpecificHandleLine(node, handleNumber) {
+			let specificHandle;
+			let vertex = node.vertex;
+			switch (handleNumber) {
+				case 1:	
+            		specificHandle = vertex.handle1; 	break;
+				case 2:
+					specificHandle = vertex.handle2;	
+			}
 
-            handle.createAndStyleLine(handle.stroke, handle.strokeWidth)
-            handle.line.moveTo(node.vertex.x, node.vertex.y);
-            handle.line.lineTo(handle.x, handle.y);
-            handle.line.draw(drawingContext);
+            specificHandle.createAndStyleLine(specificHandle.stroke, specificHandle.strokeWidth)
+            specificHandle.line.moveTo(node.vertex.x, node.vertex.y);
+            specificHandle.line.lineTo(specificHandle.x, specificHandle.y);
+            specificHandle.line.draw(drawingContext);
         }
 
     drawShape(shape) {  

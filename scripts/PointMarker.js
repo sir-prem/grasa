@@ -53,7 +53,11 @@ class PointMarker {
         this.fill = style.fill;
         this.stroke = style.stroke;
         this.strokeWidth = style.strokeWidth;
-        this.ellipsePath = g.colorize(this.ellipsePath, style.fill, style.stroke, style.strokeWidth);
+        this.ellipsePath = g.colorize(
+				this.ellipsePath, 
+				style.fill, 
+				style.stroke, 
+				style.strokeWidth);
     }
 
     setMouseEntered() {

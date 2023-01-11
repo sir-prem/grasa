@@ -1,10 +1,15 @@
 class Vertex {
 
-    constructor(x, y) {
+    constructor(x, y, type) {
         this.x = x;
         this.y = y;
+		this.type = type; // 'start', 'line', 'quad', 'bezier'
         this.initialX = x;
         this.initialY = y;
+		switch(type) {
+			case 'bezier':	this.handle2;
+			case 'quad':	this.handle1;
+		}
         this.pointMarker = new PointMarker( 
                             x, y,
                             config.defaultNodeStyle.fill,

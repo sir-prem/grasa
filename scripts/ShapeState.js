@@ -14,8 +14,12 @@ class ShapeState {
         this.activeNodeIndex = index;
     }
 
-    setNoNodesActive() {
+    setInactive() {
         this.activeNodeIndex = -1;
     }
+
+	isActive() {
+		return this.activeNodeIndex > -1;
+	}
 
 }

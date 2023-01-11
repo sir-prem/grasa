@@ -172,7 +172,7 @@ class ShapesLibrary {
             shape = this.shapesArray[i];
             shape.recreateGPath();
             shape.draw();
-            shape.drawMarkUp();
+            //shape.drawMarkUp();
         }
 
         // draw intersections

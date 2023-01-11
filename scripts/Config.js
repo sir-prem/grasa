@@ -2,8 +2,8 @@ class Config {
 
     constructor(config) {
         this.mouseOverNode          = config.mouseOverNode;
-        this.mouseInsideChildNode   = config.mouseInsideChildNode;
-        this.mouseClickChildNode    = config.mouseClickChildNode;
+        this.mouseInsideNodePoint   = config.mouseInsideNodePoint;
+        this.mouseClickNodePoint    = config.mouseClickNodePoint;
         this.defaultNodeStyle       = config.defaultNodeStyle;
         this.mouseOverVertex        = config.mouseOverVertex;
         this.mouseOutVertex         = config.mouseOutVertex;    

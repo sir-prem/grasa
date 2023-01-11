@@ -1,18 +1,8 @@
 class MouseState {
 
-    constructor (activeObjectType) {
-        this.activeObjectType = activeObjectType; // can be either 'node' or 'shape' that is
-                                                  // being driven by mouse (clicked, dragged, etc)
+    constructor () {
         this.clickedPoint = new MouseClickedPoint();
-        this.draggedDistance = new MouseDraggedDistance();
-        this.isDragging = false;
+		this.drag = new MouseDrag(clickedPoint.x, clickedPoint.y);
     }
 
-    setDragging() {
-        this.isDragging = true;
-    }
-
-    setNoLongerDragging() {
-        this.isDragging = false;
-    }
 }

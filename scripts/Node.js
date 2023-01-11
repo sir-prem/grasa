@@ -1,61 +1,70 @@
 class Node {
 
-    constructor(x, y, type) {
-        this.vertex = new Vertex(x, y);
-        this.type = type;   // either 'start', 'line', 'bezier', 'quad', 'centre'
-        this.handlesArray = [];
+    constructor ( x, y, nodeType, vertexType) {
+        this.type = nodeType;   // 'vertex' or 'centre'
+		if (nodeType === 'vertex') {
+			this.vertex = new Vertex(x, y, vertexType);
+		}
+		else {
+			this.centrePoint = new CentrePoint(x, y);
+		}
         this.state = new NodeState();
-		this.centrePoint = new CentrePoint(x, y);
-
     }
 
-    activate(whichChild) {
+    activate(nodePoint) {
         this.state.setActive();
-        this.state.setChildActive(whichChild);
-
+        this.state.setActiveNodePoint(nodePoint);
         this.setStyleMouseOver();
         
-    }
+	}
 
     deactivate() {
         this.state.setInactive();
-        this.state.setChildInactive();
-        this.setStyleDefault();
+        this.state.unsetActiveNodePoint();
+		if (this.type === 'vertex') 
+			this.unstyleAllVertexNodePoints();
+		else if (this.type === 'centre')
+			this.unstyleCentrePoint();
+		
+
     }
 
     setStyleMouseOver() {
-        // set all children (vertex + handle(s) ) to mouse over style
-        this.setStyleToAllChildren(config.mouseOverNode);
+		if (this.type === 'vertex') {
+			this.styleAllVertexNodePoints(config.mouseOverNode);
+		}
 
-        // set active child to mouse inside style
-        this.setStyleToSpecificChild(
-                                    this.state.whichChildIsActive,
-                                    config.mouseInsideChildNode );
+		else {
+			this.styleCentrePoint(config.mouseInsideNodePoint );
+		}
     }
 
     setStyleMouseClick() {
-        this.setStyleToSpecificChild(
-                                    this.state.whichChildIsActive,
-                                    config.mouseClickChildNode );
+        this.styleNodePoint(
+                                    this.state.activeNodePoint,
+                                    config.mouseClickNodePoint );
     }
     
-    setStyleDefault() {
-        // set all children (vertex + handle(s) ) to mouse over style
-        this.setStyleToAllChildren(config.defaultNodeStyle);
+    unstyleAllVertexNodePoints() {
+        this.styleAllVertexNodePoints(config.defaultNodeStyle);
     }
-            
+          
+	unstyleCentrePoint() {
+		this.styleCentrePoint(config.defaultNodeStyle);
+	}
 
             
     // STYLE SETTING FUNCTIONS
     
-    setStyleToAllChildren(style) {
+	styleCentrePoint(style) {
+		this.centrePoint.pointMarker.setColour(style);
+	}
+	
+    styleAllVertexNodePoints(style) {
 
         this.vertex.pointMarker.setColour(
                                         style );
                                         
-        this.centrePoint.pointMarker.setColour(
-                                        style );
-
         if (this.type === 'bezier' || this.type === 'quad') {
 
                 this.handlesArray[0].pointMarker.setColour(
@@ -69,8 +78,8 @@ class Node {
 
     }
 
-    setStyleToSpecificChild(whichChild, style) {
-        switch(whichChild) {
+    styleNodePoint(nodePointType, style) {
+        switch(nodePointType) {
             case 'vertex':
                 this.vertex.pointMarker.setColour(style );   break;
             case 'centre':
@@ -84,86 +93,87 @@ class Node {
 
     drag(mouseX, mouseY, shape) {
 
-        //check which child active
-        let activeChild = this.state.whichChildIsActive;
+		console.log(`dragging ${this.state.activeNodePoint}`);
 
-        // update mouse dragged distance (from clicked point to current mouse location)
-        this.state.mouseState.draggedDistance.update(
-                            this.state.mouseState.clickedPoint.x,
-                            this.state.mouseState.clickedPoint.y, 
-                            mouseX, 
-                            mouseY  
-                            );
-
-        // set node's mouse state to dragging
+		this.updateMouseDraggedDistance();
         this.state.mouseState.setDragging();
 
-        switch (activeChild) {
+        switch (this.state.activeNodePoint) {
 
             case 'vertex':
-                // move vertex and update handles accordingly
-                this.vertex.moveTo(mouseX, mouseY, this);
-                console.log(`dragging ${activeChild}`);         break;
-    
+                this.vertex.moveTo(mouseX, mouseY, this);		
+				shape.getCentreNode().centrePoint.recalculate(shape);	break;
+
             case 'handle1': 
-                this.handlesArray[0].moveTo(mouseX, mouseY);    break;
+                this.vertex.handle1.moveTo(mouseX, mouseY);    break;
+
             case 'handle2':
-                // move handle to reshape the curve (quad or bezier)
-                console.log(`dragging ${activeChild}`);
-                this.handlesArray[1].moveTo(mouseX, mouseY);    break;
-                
-            case 'centre':
-            	this.centrePoint.moveTo(mouseX, mouseY, shape);		break;
-
+                this.vertex.handle2.moveTo(mouseX, mouseY);    break;
         }
-
-        
     }
 
     dragRelease() {
         if (this.state.mouseState.isDragging) {
             this.state.mouseState.setNoLongerDragging();
         }
-        //check which child active
-        let activeChild = this.state.whichChildIsActive;
+		if (this.isActiveNodePointHandle()) {
+			this.resetHandlesInitialPosition();
+		}
+    }
+    
+    printDetails() {
+        console.log(`*      Is Active:          ${this.state.isActive}`);
+        console.log(`*      activeNodePoint: 	${this.state.activeNodePoint}`);
 
-        //reset handle initial position
-        if (activeChild !== 'none') {
+		if ( this.type === 'vertex') {
+			console.log(`*		vertex.type:	${this.vertex.type}`);
+			console.log(`*      Co-ords:          
+				( ${Math.trunc(this.vertex.x)}, ${Math.trunc(this.vertex.y)} )`);
+			switch (this.vertex.type) {
+				case 'bezier':
+					console.log(`*      Handle2:
+								( 	${Math.trunc(this.vertex.handle2.x)}, 
+									${Math.trunc(this.vertex.handle2.y)} )`);
+				case 'quad':
+					console.log(`*      Handle1:                
+								( 	${Math.trunc(this.vertex.handle1.x)}, 
+									${Math.trunc(this.vertex.handle1.y)} )`);
+					break;
+			}
 
+		} 
+		else if (this.type === 'centre') {
+			console.log(`*      Co-ords:          
+				( ${Math.trunc(this.centrePoint.x)}, ${Math.trunc(this.centrePoint.y)} )`);
+		}
+    }
+
+	updateMouseDraggedDistance() {
+
+        this.state.mouseState.draggedDistance.update(
+                            this.state.mouseState.clickedPoint.x,
+                            this.state.mouseState.clickedPoint.y, 
+                            mouseX, 
+                            mouseY  
+                            );
+	}
+
+	resetHandlesInitialPosition() {
+		
             switch (this.type) {
                 case 'bezier':
                     this.handlesArray[1].resetInitialPosition();
                 case 'quad':
                     this.handlesArray[0].resetInitialPosition();
             }
+	}
 
-        }
-
-    }
-    
-    printDetails() {
-        console.log(`*      Is Active:          ${this.state.isActive}`);
-        console.log(`*      Which Child Active: ${this.state.whichChildIsActive}`);
-        console.log(`*      Type:               ${this.type}`);
-        console.log(`*      Vertex:             ( ${Math.trunc(this.vertex.x)}, ${Math.trunc(this.vertex.y)} )`);
-        switch (this.type) {
-            case 'bezier':
-                console.log(`*      Handle2:                ( 	${Math.trunc(this.handlesArray[1].x)}, 
-																${Math.trunc(this.handlesArray[1].y)} )`);
-            case 'quad':
-                console.log(`*      Handle1:                ( 	${Math.trunc(this.handlesArray[0].x)}, 
-																${Math.trunc(this.handlesArray[0].y)} )`);
-                break;
-        }
-    }
-
-    drawCoordinates(childType, child) {
-        
-    }
-    // methods
-    // getWhichChildIsActive
-    // howManyChildren
-    // etc
-
+	isActiveNodePointHandle() {
+		if (this.state.activeNodePoint === 'handle1' ||
+			this.state.activeNodePoint === 'handle2') {
+			return true;
+		}
+		else return false;
+	}
 
 }
