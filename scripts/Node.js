@@ -95,6 +95,10 @@ class Node {
 
 		console.log(`dragging ${this.state.activeNodePoint}`);
 
+
+		this.state.mouseState.drag.setDragging();
+
+		/*
 		this.updateMouseDraggedDistance();
         this.state.mouseState.setDragging();
 
@@ -110,6 +114,7 @@ class Node {
             case 'handle2':
                 this.vertex.handle2.moveTo(mouseX, mouseY);    break;
         }
+		*/
     }
 
     dragRelease() {
