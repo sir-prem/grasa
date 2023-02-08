@@ -111,7 +111,7 @@ class ShapesLibrary {
             mouseInPointerMarkersTotal += 
                     shape.state.mouseInsideHowManyPointMarkers;
                      
-            //console.log(`countTOTAL: ${mouseInPointerMarkersTotal}`);
+            console.log(`mouse in point markers: ${mouseInPointerMarkersTotal}`);
 
             if (mouseInPointerMarkersTotal > 1) {
                 // deactivate any existing nodes while in an overlap
@@ -126,7 +126,7 @@ class ShapesLibrary {
             let shape;
             for (let i = 0; i < this.shapesArray.length; i++) {
                 shape = this.shapesArray[i];
-                shape.deactivateExistingNode();
+                shape.deactivateNode();
             }
         }
 

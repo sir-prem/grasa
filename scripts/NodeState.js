@@ -4,7 +4,7 @@ class NodeState {
         this.isActive = false;
         this.activeNodePoint = 'none';  // either 'none', 'vertex', 
 											// 'handle1', 'handle2', 'centrePoint'
-        this.mouseState = new MouseState('node');
+        //this.mouseState = new MouseState();
     }
 
 

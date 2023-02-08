@@ -49,10 +49,6 @@ function setup() {
             // anything here if req'd
         }
     });
-
-    
-    
-
     
         // create shapes from new (create mode)
         
@@ -95,7 +91,6 @@ function setup() {
 	sliderUI.createStrokeSliders();
 	sliderUI.setStrokeSliderPositions(width-165, 350, 20);
 	sliderUI.setStrokeSliderStyles(100);
-	
 }
 
 function draw() { 
@@ -113,7 +108,6 @@ function draw() {
 		newShape.draw();
 		newShape.drawMarkUp();
 	}	
-
 }
 
 function mouseMoved() {
@@ -222,7 +216,6 @@ function keyPressed() {
 }
 
 function drawUIOverlay() {
-
     //draw mouse co-ords
     fill('indianred');
     textSize(14);
@@ -276,7 +269,7 @@ function drawUIOverlay() {
 	rect(width-120, 100, 45, 45); // Draw rectangle
 	noStroke();
 
-	}
+}
 
 function drawBackground() {
     // hue (0-360)
@@ -288,7 +281,6 @@ function drawBackground() {
 }
 
 function setupConfig() {
-
     let ellipseStrokeWidth = 1;
 
     mouseOverNode = {

@@ -4,8 +4,7 @@ class Vertex {
         this.x = x;
         this.y = y;
 		this.type = type; // 'start', 'line', 'quad', 'bezier'
-        this.initialX = x;
-        this.initialY = y;
+		this.resetInitialPosition();	
 		switch(type) {
 			case 'bezier':	this.handle2;
 			case 'quad':	this.handle1;
@@ -45,9 +44,11 @@ class Vertex {
         }
     }
 
-    offsetPosition(dx, dy) {
-        this.x += dx;
-        this.y += dy;
+    offsetPosition(node) {
+		let mouseDrag = window.mouseState.drag;
+        this.x += mouseDrag.draggedDistanceX;
+        this.y += mouseDrag.draggedDistanceY;
+		this.moveTo( this.x, this.y, node );
     }
 
     setVertexToDragging() {
@@ -57,6 +58,12 @@ class Vertex {
     setVertexToStationary() {
         this.isDragging = false;
     }
+
+	resetInitialPosition() {
+
+        this.initialX = this.x;
+        this.initialY = this.y;
+	}
 
     static calculateInitialHandleCoordinates(x, y, xPrev, yPrev) {
         

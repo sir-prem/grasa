@@ -194,26 +194,17 @@ class Shape {
 	}
 
 	dragShape(x, y) {
-		
-		let centreNode = this.getCentreNode();
 		console.log('dragShape() initiated');
-		let draggedDistanceX = x - centreNode.centrePoint.initialX;
-		let draggedDistanceY = y - centreNode.centrePoint.initialY;
-		let new_x_coordinate, new_y_coordinate;
-													 
+
+		let mouseDrag = window.mouseState.drag;
+
 		for (let i= 0; i < this.nodesArray.length; i++) {
 			let node = this.nodesArray[i];
 			if (node.type === 'vertex') {
-				new_x_coordinate = node.vertex.initialX + draggedDistanceX;
-				new_y_coordinate = node.vertex.initialY + draggedDistanceY;
-				 node.vertex.moveTo(new_x_coordinate,
-				 					new_y_coordinate,
-				 					node);
+				node.vertex.offsetPosition(node);
 			}
 			else if (node.type === 'centre') {
-				centreNode.centrePoint.x = x;
-				centreNode.centrePoint.y = y;
-				centreNode.centrePoint.pointMarker.updatePosition(x,y);
+				node.centrePoint.moveTo(x,y);
 			}
 		}
 	}
@@ -229,10 +220,8 @@ class Shape {
     //--------------------------------------------------------------------
 
     mouseOver() {
-
         this.setMouseInsidePointMarkers();
         this.handleOverlaps();
-        
     }
 
        // HELPERS for mouseOver()
@@ -251,14 +240,13 @@ class Shape {
         }
 
     mousePress(mouseX, mouseY) {
-
         let activeNode;
 
         // check for EXISTING active node
         if ( this.activeNodeExists() ) {
             activeNode = this.getActiveNode();
             activeNode.setStyleMouseClick();
-            activeNode.state.mouseState.clickedPoint.set(mouseX,mouseY);
+            window.mouseState = new MouseState(mouseX,mouseY);
             this.printNodeData();
         }
         else { // mouse clicked in empty space
@@ -267,53 +255,63 @@ class Shape {
     }
 
     mouseDrag(mouseX, mouseY) {
-
-        let activeNode;
-
         if ( this.activeNodeExists() ) {
-            activeNode = this.getActiveNode();
-
-			if (activeNode.type === 'vertex') {
-				activeNode.drag(mouseX, mouseY, this);
-			}
-			else if (activeNode.type === 'centre') {
-				this.dragShape( mouseX, mouseY);
-			}
-			//centreNode.centrePoint.resetInitialPosition();
-			//this.recreateGPath();
+			this.dragNodePoint();
         }
     }
 
     mouseRelease() {
-
-        let activeNode;
-
         // check for EXISTING active node
         if ( this.activeNodeExists() ) {
-            activeNode = this.getActiveNode();
-            activeNode.setStyleMouseOver();
-            if (activeNode.type === 'vertex') 
-				activeNode.dragRelease();
-			else if (activeNode.type === 'centre')
-				this.dragShapeRelease();
-            this.printNodeData();
-			//return this;
+			this.releaseNodePoint();
         }
         else { // mouse released in empty space
             return; // do nothing
         }
-        
     }
 
         // HELPERS for mouse action methods
 
-		dragShapeRelease() {
-			let centreNode = this.getCentreNode();
-			centreNode.centrePoint.resetInitialPosition();
+		dragNodePoint() {
+			let mouseDrag = window.mouseState.drag;
+			let activeNode = this.getActiveNode();
+			let centrePoint = this.getCentreNode().centrePoint;
+			this.draggingInit();
+			switch (activeNode.type) {
+				case 'vertex':
+				case 'handle':
+					activeNode.drag(mouseX, mouseY, this); 		break;
+				case 'centre':
+					this.dragShape( mouseX, mouseY);
+			}
+			mouseDrag.updateStartPoint();
+			let newCentrePoint = centrePoint.recalculate(this);	
+			centrePoint.moveTo(newCentrePoint.x, newCentrePoint.y);	
 		}
-	
-        setMouseInsidePointMarkers() {
 
+		draggingInit() {
+			let mouseDrag = window.mouseState.drag;
+			mouseDrag.setDragging();
+			mouseDrag.setCurrentPoint(mouseX, mouseY);
+			mouseDrag.updateDraggedDistance();
+		}
+
+		releaseNodePoint() {
+			let activeNode = this.getActiveNode();
+			let centrePoint = this.getCentreNode().centrePoint;
+			let mouseDrag = window.mouseState.drag;
+			if (mouseDrag.isDragging) {
+				mouseDrag.setNoLongerDragging();
+				activeNode.setStyleMouseOver();
+				mouseDrag.resetDraggedDistance();
+				if (activeNode.type === 'centre') {
+					centrePoint.recalculate(this);
+					centrePoint.moveTo(mouseX, mouseY);
+				}
+			}
+		}
+
+        setMouseInsidePointMarkers() {
             let node;
 
             for (let i  = 0; i < this.nodesArray.length; i++) {
@@ -336,12 +334,9 @@ class Shape {
 					this.setMouseInsidePointMarker(node, node.centrePoint, 'centre', i);
 				}
             } // end for loop
-
         }
 
-
         setMouseInsidePointMarker(node, child, type, nodeIndex) {
-
             if (child.pointMarker.isMouseInside()) {
                 if (child.pointMarker.isMouseAlreadyInside()) {
                     console.log(`inside node ${nodeIndex}s ${type}`);
@@ -369,8 +364,6 @@ class Shape {
                     }
                 }
             }
-
-            
         }
 
         handleOverlaps() {
@@ -395,8 +388,6 @@ class Shape {
             }
 
 
-        
-
     //===================================================================
     //
     //      DRAWING FUNCTIONS
@@ -417,6 +408,4 @@ class Shape {
             draw.markUpNode(node);
         }
     }
-    
-    
 }

@@ -15,7 +15,6 @@ class Node {
         this.state.setActive();
         this.state.setActiveNodePoint(nodePoint);
         this.setStyleMouseOver();
-        
 	}
 
     deactivate() {
@@ -25,8 +24,6 @@ class Node {
 			this.unstyleAllVertexNodePoints();
 		else if (this.type === 'centre')
 			this.unstyleCentrePoint();
-		
-
     }
 
     setStyleMouseOver() {
@@ -61,7 +58,6 @@ class Node {
 	}
 	
     styleAllVertexNodePoints(style) {
-
         this.vertex.pointMarker.setColour(
                                         style );
                                         
@@ -75,7 +71,6 @@ class Node {
                 this.handlesArray[1].pointMarker.setColour(
                                         style );
         }
-
     }
 
     styleNodePoint(nodePointType, style) {
@@ -92,40 +87,38 @@ class Node {
     }
 
     drag(mouseX, mouseY, shape) {
-
+		//let centrePoint = shape.getCentreNode().centrePoint;
+		//let newCentrePoint;
 		console.log(`dragging ${this.state.activeNodePoint}`);
 
-
-		this.state.mouseState.drag.setDragging();
-
-		/*
-		this.updateMouseDraggedDistance();
-        this.state.mouseState.setDragging();
-
-        switch (this.state.activeNodePoint) {
-
-            case 'vertex':
-                this.vertex.moveTo(mouseX, mouseY, this);		
-				shape.getCentreNode().centrePoint.recalculate(shape);	break;
-
-            case 'handle1': 
+		switch (this.state.activeNodePoint) {
+			case 'vertex':
+                this.vertex.moveTo(mouseX, mouseY, this);	break;	
+				//newCentrePoint = centrePoint.recalculate(shape);	
+				//centrePoint.moveTo(newCentrePoint.x, newCentrePoint.y);	break;
+			case 'handle1':
                 this.vertex.handle1.moveTo(mouseX, mouseY);    break;
-
-            case 'handle2':
+			case 'handle2':
                 this.vertex.handle2.moveTo(mouseX, mouseY);    break;
-        }
-		*/
+		}
     }
-
+/*
     dragRelease() {
-        if (this.state.mouseState.isDragging) {
-            this.state.mouseState.setNoLongerDragging();
+        if (this.state.mouseState.drag.isDragging) {
+            this.state.mouseState.drag.setNoLongerDragging();
+			switch (this.state.activeNodePoint) {
+
+				case 'vertex':
+					this.vertex.resetInitialPosition();		break;		
+				case 'centrePoint':
+					this.centrePoint.resetInitialPosition();	break;
+			}
         }
 		if (this.isActiveNodePointHandle()) {
 			this.resetHandlesInitialPosition();
 		}
     }
-    
+ */   
     printDetails() {
         console.log(`*      Is Active:          ${this.state.isActive}`);
         console.log(`*      activeNodePoint: 	${this.state.activeNodePoint}`);

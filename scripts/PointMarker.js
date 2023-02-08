@@ -11,7 +11,6 @@ class PointMarker {
         this.createGPath(x, y);
         this.styleGPath();
         this.isMouseStillInside = false;
-        
     }
 
     createGPath(x, y) {
