@@ -112,7 +112,6 @@ class Shape {
 	}
 
 	addHandles(node, handleCoords, vertexType) {
-		
 		// first handle
 		let newVertexHandle1 = 
 			new Handle(	handleCoords.handle1Coords.x, 
@@ -146,8 +145,6 @@ class Shape {
 		this.gPath.closePath();
     }
 
-
-
     // checks whether point is within (closed) shape's bounds
     containsPoint(x, y) {
         return this.gPath.contains(x,y);
@@ -170,7 +167,6 @@ class Shape {
 			vertex = node.vertex;
             
             switch(vertex.type) {
-
                 case 'start':
                     this.addStartPoint(node);         break;
                 case 'line':
@@ -220,7 +216,7 @@ class Shape {
     //--------------------------------------------------------------------
 
     mouseOver() {
-        this.setMouseInsidePointMarkers();
+        this.isMouseInsideAnyNodePoint();
         this.handleOverlaps();
     }
 
@@ -311,32 +307,37 @@ class Shape {
 			}
 		}
 
-        setMouseInsidePointMarkers() {
+        isMouseInsideAnyNodePoint() {
             let node;
 
             for (let i  = 0; i < this.nodesArray.length; i++) {
                 node = this.nodesArray[i];
 
-				if (node.type !== 'centre') {
-					this.setMouseInsidePointMarker(node, node.vertex, 'vertex', i);
+				if (node.type === 'vertex') {
+					this.isMouseInsideNodePoint(
+							node, node.vertex, 'vertex', i  );
 					
 					// check mouse inside HANDLE 1
-					if (node.type === 'quad' || node.type === 'bezier') {
-	                    this.setMouseInsidePointMarker(node, node.handlesArray[0], 'handle1', i);
+					if (node.vertex.type === 'quad' || 
+						node.vertex.type === 'bezier') {
+	                    this.isMouseInsideNodePoint(
+							node, node.vertex.handle1, 'handle1', i  );
 	                }
 	                
 	                // check mouse inside HANDLE 2
-					if (node.type === 'bezier') {
-	                    this.setMouseInsidePointMarker(node, node.handlesArray[1], 'handle2', i);
+					if (node.vertex.type === 'bezier') {
+	                    this.isMouseInsideNodePoint(
+							node, node.vertex.handle2, 'handle2', i  );
 	                }
 				}
 				else {
-					this.setMouseInsidePointMarker(node, node.centrePoint, 'centre', i);
+					this.isMouseInsideNodePoint(
+							node, node.centrePoint, 'centre', i   );
 				}
             } // end for loop
         }
 
-        setMouseInsidePointMarker(node, child, type, nodeIndex) {
+        isMouseInsideNodePoint(node, child, type, nodeIndex) {
             if (child.pointMarker.isMouseInside()) {
                 if (child.pointMarker.isMouseAlreadyInside()) {
                     console.log(`inside node ${nodeIndex}s ${type}`);

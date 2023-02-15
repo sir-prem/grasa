@@ -31,7 +31,7 @@ class Draw {
 	            handle1.pointMarker.draw();
 	        }
 	
-	        if (node.type === 'bezier') { // node has 2nd handle
+	        if (vertex.type === 'bezier') { // node has 2nd handle
 	            handle2 = vertex.handle2;
 	            handle2.pointMarker.draw();
 	        }

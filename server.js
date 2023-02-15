@@ -129,11 +129,6 @@ function newConnection(socket) {
 			userEmail = userEmailReceived;
 		});
 
-
-
-
-
-
     //======================================================
 	//
     // 		LOAD request 
@@ -143,7 +138,6 @@ function newConnection(socket) {
 	//======================================================
 
 		socket.on('load request', async (msg) => {
-
 			const filter = { userEmail: msg };
 			var result = await ShapesData.findOne(filter).exec();
 
@@ -173,12 +167,7 @@ function newConnection(socket) {
 						}
 					);
 			}
-
 		});
-
-
-
-
 
     //======================================================
 	//
@@ -189,7 +178,6 @@ function newConnection(socket) {
 	//======================================================
 
     socket.on('save request', async (msg) => {
-
         console.log(`save req: user email is: ${userEmail}`);
         
         const filter = { userEmail: userEmail };

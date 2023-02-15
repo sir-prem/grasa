@@ -3,8 +3,6 @@ class Handle {
     constructor (x, y, handleNumber ) {
         this.x = x;
         this.y = y;
-        this.initialX = this.x;
-        this.initialY = this.y;
 
         this.number = handleNumber;
         
@@ -18,16 +16,12 @@ class Handle {
                         config.ellipseRadii.handle );
     }
 
-    resetInitialPosition() {
-        this.initialX = this.x;
-        this.initialY = this.y;
-    }
-
     // offsetPosition() is used when handle's vertex is being dragged
     offsetPosition(dx, dy) {
-        this.x = this.initialX + dx;
-        this.y = this.initialY + dy;
-        this.pointMarker.updatePosition(this.x,this.y);
+		let mouseDrag = window.mouseState.drag;
+        this.x += mouseDrag.draggedDistanceX;
+        this.y += mouseDrag.draggedDistanceY;
+		this.moveTo( this.x, this.y );
     }
 
     // moveTo() is used when handle itself is being dragged to reshape a curve
@@ -54,7 +48,5 @@ class Handle {
                                                 config.handles.handle2.strokeWidth);       
                                                 break;
         }
-        
     }
-
 }

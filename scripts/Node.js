@@ -61,14 +61,15 @@ class Node {
         this.vertex.pointMarker.setColour(
                                         style );
                                         
-        if (this.type === 'bezier' || this.type === 'quad') {
+        if (this.vertex.type === 'bezier' || 
+			this.vertex.type === 'quad') {
 
-                this.handlesArray[0].pointMarker.setColour(
+                this.vertex.handle1.pointMarker.setColour(
                                         style );
         }
 
         if (this.type === 'bezier') {
-                this.handlesArray[1].pointMarker.setColour(
+                this.vertex.handle2.pointMarker.setColour(
                                         style );
         }
     }
@@ -80,45 +81,25 @@ class Node {
             case 'centre':
                 this.centrePoint.pointMarker.setColour(style );   break;
             case 'handle1':
-                this.handlesArray[0].pointMarker.setColour(style );   break;
+                this.vertex.handle1.pointMarker.setColour(style );   break;
             case 'handle2':
-                this.handlesArray[1].pointMarker.setColour(style );   break;
+                this.vertex.handle2.pointMarker.setColour(style );   break;
         }
     }
 
     drag(mouseX, mouseY, shape) {
-		//let centrePoint = shape.getCentreNode().centrePoint;
-		//let newCentrePoint;
 		console.log(`dragging ${this.state.activeNodePoint}`);
 
 		switch (this.state.activeNodePoint) {
 			case 'vertex':
                 this.vertex.moveTo(mouseX, mouseY, this);	break;	
-				//newCentrePoint = centrePoint.recalculate(shape);	
-				//centrePoint.moveTo(newCentrePoint.x, newCentrePoint.y);	break;
 			case 'handle1':
                 this.vertex.handle1.moveTo(mouseX, mouseY);    break;
 			case 'handle2':
                 this.vertex.handle2.moveTo(mouseX, mouseY);    break;
 		}
     }
-/*
-    dragRelease() {
-        if (this.state.mouseState.drag.isDragging) {
-            this.state.mouseState.drag.setNoLongerDragging();
-			switch (this.state.activeNodePoint) {
 
-				case 'vertex':
-					this.vertex.resetInitialPosition();		break;		
-				case 'centrePoint':
-					this.centrePoint.resetInitialPosition();	break;
-			}
-        }
-		if (this.isActiveNodePointHandle()) {
-			this.resetHandlesInitialPosition();
-		}
-    }
- */   
     printDetails() {
         console.log(`*      Is Active:          ${this.state.isActive}`);
         console.log(`*      activeNodePoint: 	${this.state.activeNodePoint}`);

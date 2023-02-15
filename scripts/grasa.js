@@ -12,85 +12,40 @@ function setup() {
     
     let sketchWidth = document.getElementById("grasa-div").offsetWidth;
     let sketchHeight = document.getElementById("grasa-div").offsetHeight;
-    let renderer = createCanvas(sketchWidth, 550);
+    let renderer = createCanvas(sketchWidth, 620);
     renderer.parent("grasa-div");
     colorMode(HSB, 100);
 
-    // do config
     config = setupConfig();
-
     mode = 'SCULPT';
     nextAction = 'sculpt shapeA';
-
     shapesLibrary = new ShapesLibrary();
-
-    //========================================================================
-    //
-    //      Change here for local testing or server deployment
-    //
-    //------------------------------------------------------------------------
-
     socket = io.connect('http://localhost:4000' || 'https://viridian-marked-fork.glitch.me');
-    //socket = io.connect('https://viridian-marked-fork.glitch.me');
-
 
     socket.on(`load req recd`, (JSONLoadData) => {
-
         console.log(JSONLoadData.message);
 
         if (JSONLoadData.result) {
-
             //NOTE: here there could be a warning, before loading old data from DB,
             //      e.g. Are you sure? Any unsaved work will be lost
-            
             shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
+           console.log(`reached load data results. shapes array length is: ${shapesLibrary.shapesArray.length}`); 
         }
         else {
             // anything here if req'd
         }
     });
     
-        // create shapes from new (create mode)
-        
-        /*
-        example of what create mode should do:
-        ---------------------------------------
-
-        shapesLibrary = new ShapesLibrary();
-
-        shape1 = new Shape('thistle', 'lightseagreen', 6);
-        shape1.addNode( 400, 150, 'start');
-        shape1.addNode( 200, 350, 'line');
-        shape1.addNode( 600, 350, 'line');
-        shape1.closeGPath();
-    
-        shape2 = new Shape('steelblue', 'ivory', 3);
-        shape2.addNode( 300, 100, 'start');
-        shape2.addNode( 100, 400, 'bezier');
-        shape2.addNode( 500, 400, 'line');
-        shape2.closeGPath();
-    
-        shape3 = new Shape('ivory', 'mediumorchid', 1);
-        shape3.addNode( 100, 100, 'start');
-        shape3.addNode( 100, 300, 'bezier');
-        shape3.addNode( 300, 200, 'line');
-        shape3.closeGPath();
-    
-        shapesLibrary.add(shape1);
-        shapesLibrary.add(shape2);
-        shapesLibrary.add(shape3);
-        */
-
  	// add Colour Sliders 
 	sliderUI = new SliderUI();
 
 	sliderUI.createFillSliders();
 	sliderUI.setFillSliderPositions(width-165, 220, 20);
-	sliderUI.setFillSliderStyles(100);
+	sliderUI.setFillSliderStyles('100px');
 	
 	sliderUI.createStrokeSliders();
 	sliderUI.setStrokeSliderPositions(width-165, 350, 20);
-	sliderUI.setStrokeSliderStyles(100);
+	sliderUI.setStrokeSliderStyles('100px');
 }
 
 function draw() { 
@@ -181,7 +136,6 @@ function mouseReleased() {
        shapesLibrary.mouseRelease();
     }
 }
-
 
 function keyPressed() {
     if (key === 'c') {

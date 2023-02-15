@@ -1,12 +1,13 @@
 class ShapesLibrary {
 
     constructor(JSONFromDB) {
-
         this.shapesArray = [];
         this.intersectionShapesArray = [];
 
-        let JSONShapesArray, JSONShape, JSONNodesArray, JSONNode, JSONHandle1, JSONHandle2, nodeType;
-        let node, shape, vertexX, vertexY, handle1, handle2;
+        let JSONShapesArray, JSONShape, JSONNodesArray, JSONNode, 
+				JSONHandle1, JSONHandle2, nodeType, vertexType;
+        let node, shape, vertex, vertexX, vertexY, handle1, handle2,
+				centrePoint;
         let i, j;
 
         if (arguments.length < 1) {
@@ -33,37 +34,34 @@ class ShapesLibrary {
                     JSONNode = JSONNodesArray[j];
                     nodeType = JSONNode.type;
 
-                    vertexX = JSONNode.vertex.x;
-                    vertexY = JSONNode.vertex.y;
+					if (nodeType === 'vertex') {
+						vertex = JSONNode.vertex;
 
-                    node = new Node(vertexX, vertexY, nodeType);
+						node = new Node(vertex.x, vertex.y, nodeType, vertex.type);
 
-                    //re-create handles (if types quad or bezier) 
-                    // and push them into handlesArray
-                    if (nodeType === 'bezier' || nodeType === 'quad') {
-                        // has at least 1 handle
-                        JSONHandle1 = JSONNode.handlesArray[0];
-                        handle1 = new Handle(JSONHandle1.x, JSONHandle1.y, 1);
-                        node.handlesArray.push(handle1);
-                    }
+						//re-create handles (if types quad or bezier) 
+						// and push them into handlesArray
+						if (vertex.type === 'bezier' || vertex.type === 'quad') {
+							// has at least 1 handle
+							JSONHandle1 = JSONNode.vertex.handle1;
+							handle1 = new Handle(JSONHandle1.x, JSONHandle1.y, 1);
+							node.handlesArray.push(handle1);
+						}
 
-                    if (nodeType === 'bezier') {
-                        // has 2nd handle
-                        JSONHandle2 = JSONNode.handlesArray[1];
-                        handle2 = new Handle(JSONHandle2.x, JSONHandle2.y, 2);
-                        node.handlesArray.push(handle2);
-                    }
-
-                    //push node into shape.nodesArray
+						if (vertex.type === 'bezier') {
+							// has 2nd handle
+							JSONHandle2 = JSONNode.vertex.handle2;
+							handle2 = new Handle(JSONHandle2.x, JSONHandle2.y, 2);
+							node.handlesArray.push(handle2);
+						}
+					}
+					else if (nodeType === 'centre') {
+						centrePoint = JSONNode.centrePoint;
+						node = new Node(centrePoint.x, centrePoint.y, nodeType, 'null');
+					}
                     shape.nodesArray.push(node);
-
                 }
-
-                // push shape into shapesArray
                 this.shapesArray.push(shape);
-
-                
-                
             }
 
             // reconstruct intersectionShapesArray
@@ -99,15 +97,11 @@ class ShapesLibrary {
     }
 
     mouseOver() {
-
         let mouseInPointerMarkersTotal = 0;
         let shape;
         for (let i = 0; i < this.shapesArray.length; i++) {
-
             shape = this.shapesArray[i];
-
             shape.mouseOver();
-            
             mouseInPointerMarkersTotal += 
                     shape.state.mouseInsideHowManyPointMarkers;
                      

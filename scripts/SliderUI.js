@@ -1,7 +1,6 @@
 class SliderUI {
 
 	constructor() {
-
 		this.fill_hue;
 		this.fill_saturation;
 		this.fill_value;
@@ -27,7 +26,6 @@ class SliderUI {
 
 	// function: set initial values for colour sliders
 	slidersInit() {
-
 		this.fill_hue = 0;
 		this.fill_saturation = 50;
 		this.fill_value = 50;
@@ -88,7 +86,6 @@ class SliderUI {
 	}
 
 	updateValues() {
-
 		this.fill_hue = 		  	this.fill_hue_slider.value();
 		this.fill_saturation = 		this.fill_saturation_slider.value();
 		this.fill_value 		= 	this.fill_value_slider.value();

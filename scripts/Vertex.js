@@ -23,24 +23,19 @@ class Vertex {
         this.y = y;
         this.pointMarker.updatePosition(x,y);
 
+		let mouseDrag = window.mouseState.drag;
+
         //move handles if required
-        switch(node.type) {
+        switch(node.vertex.type) {
             case 'bezier':  // for 'bezier' only
-                console.log(`Vertex moveTo() > case bezier: mouseDraggedDist is 
-					(${node.state.mouseState.draggedDistance.dx},
-					 ${node.state.mouseState.draggedDistance.dy})`);
-                node.handlesArray[1].offsetPosition(
-                                            node.state.mouseState.draggedDistance.dx,
-                                            node.state.mouseState.draggedDistance.dy
-                                        );
+                node.vertex.handle2.offsetPosition(
+							mouseDrag.draggedDistanceX,
+							mouseDrag.draggedDistanceY );
             case 'quad': // for 'quad' and 'bezier'
-                console.log(`Vertex moveTo() > case quad: mouseDraggedDist is 
-					(${node.state.mouseState.draggedDistance.dx},
-					 ${node.state.mouseState.draggedDistance.dy})`);
-                node.handlesArray[0].offsetPosition(
-                                            node.state.mouseState.draggedDistance.dx,
-                                            node.state.mouseState.draggedDistance.dy
-                                        );      break;
+                node.vertex.handle1.offsetPosition(
+							mouseDrag.draggedDistanceX,
+							mouseDrag.draggedDistanceY );
+                            break;
         }
     }
 
