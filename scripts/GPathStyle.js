@@ -1,57 +1,29 @@
 class GPathStyle {
 
-    constructor(style) {
-        this.fill = style.fill;
-        this.stroke = style.stroke;
-        this.strokeWidth = style.strokeWidth;
+    constructor(fillHSLA, strokeHSLA, strokeWidth) {
+		this.fillHSLA = fillHSLA;
+		this.strokeHSLA = strokeHSLA;
+		this.strokeWidth = strokeWidth;
     }
 
-    //get and set functions here
-    set(style) {
-        this.fill = style.fill;
-        this.stroke = style.stroke;
-        this.strokeWidth = style.strokeWidth;
+    set(gPathStyle) {
+        this.fillHSLA = gPathStyle.fillHSLA;
+        this.strokeHSLA = gPathStyle.strokeHSLA;
+        this.strokeWidth = gPathStyle.strokeWidth;
     }
 
-    static set(path, style) {
+    static set(path, gPathStyle) {
         path = g.colorize(
             path, 
-            style.fill, 
-            style.stroke, 
-            style.strokeWidth);
+            g.hslColor( gPathStyle.fillHSLA.hue,
+						gPathStyle.fillHSLA.saturation,
+						gPathStyle.fillHSLA.value,
+						gPathStyle.fillHSLA.alpha), 
+            g.hslColor( gPathStyle.strokeHSLA.hue,
+						gPathStyle.strokeHSLA.saturation,
+						gPathStyle.strokeHSLA.value,
+						gPathStyle.strokeHSLA.alpha), 
+            gPathStyle.strokeWidth);
         return path;
     }
-
-    get() {
-        return {
-            fill:           this.fill,
-            stroke:         this.stroke,
-            strokeWidth:    this.strokeWidth
-        };
-    }
-
-    setFill(fill) {
-        this.fill = fill;
-    }
-
-    setStroke(stroke) {
-        this.stroke = stroke;
-    }
-
-    setStrokeWidth(strokeWidth) {
-        this.strokeWidth = strokeWidth;
-    }
-
-    getFill() {
-        return this.fill;
-    }
-
-    getStroke() {
-        return this.stroke;
-    }
-
-    getStrokeWidth() {
-        return this.strokeWidth;
-    }
-
 }

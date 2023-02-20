@@ -1,17 +1,10 @@
 class Shape {
 
-  constructor(fill, stroke, strokeWidth) {
+  constructor(newStyle) {
     this.nodesArray = [];
     this.gPath = new g.Path();
-
-    let style = {
-        fill: fill,
-        stroke: stroke,
-        strokeWidth: strokeWidth
-    }
-    this.gPathStyle = new GPathStyle(style);
+    this.gPathStyle = newStyle;
     this.setGPathStyle();
-    
     this.state = new ShapeState();
   }
   

@@ -5,54 +5,72 @@ var sliderUI;
 var newShape;
 
 function setup() {
-    p5.disableFriendlyErrors = true; // disables FES
-
-    let fps = 10;
-    frameRate(fps);
-    
-    let sketchWidth = document.getElementById("grasa-div").offsetWidth;
-    let sketchHeight = document.getElementById("grasa-div").offsetHeight;
-    let renderer = createCanvas(sketchWidth, 620);
-    renderer.parent("grasa-div");
-    colorMode(HSB, 100);
-
+    frameRate(10);
+	colorMode(HSB, 100);
+	setUpCanvas();
     config = setupConfig();
-    mode = 'SCULPT';
-    nextAction = 'sculpt shapeA';
+	setInitialModeAndAction();
     shapesLibrary = new ShapesLibrary();
-    socket = io.connect('http://localhost:4000' || 'https://viridian-marked-fork.glitch.me');
-
-    socket.on(`load req recd`, (JSONLoadData) => {
-        console.log(JSONLoadData.message);
-
-        if (JSONLoadData.result) {
-            //NOTE: here there could be a warning, before loading old data from DB,
-            //      e.g. Are you sure? Any unsaved work will be lost
-            shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
-           console.log(`reached load data results. shapes array length is: ${shapesLibrary.shapesArray.length}`); 
-        }
-        else {
-            // anything here if req'd
-        }
-    });
-    
- 	// add Colour Sliders 
-	sliderUI = new SliderUI();
-
-	sliderUI.createFillSliders();
-	sliderUI.setFillSliderPositions(width-165, 220, 20);
-	sliderUI.setFillSliderStyles('100px');
-	
-	sliderUI.createStrokeSliders();
-	sliderUI.setStrokeSliderPositions(width-165, 350, 20);
-	sliderUI.setStrokeSliderStyles('100px');
+	makeSocketConnection();
+	actionLoadRequest();
+	addColourSliders();
 }
+
+	// helper functions for setup()
+	function disableFriendlyErrors() {
+		p5.disableFriendlyErrors = true; // disables FES
+	}
+
+	function setUpCanvas() {
+		let sketchWidth = document.getElementById("grasa-div").offsetWidth;
+		let sketchHeight = document.getElementById("grasa-div").offsetHeight;
+		let renderer = createCanvas(sketchWidth, 620);
+		renderer.parent("grasa-div");
+	}
+
+	function setInitialModeAndAction() {
+		mode = 'SCULPT';
+		nextAction = 'sculpt shapeA';
+	}
+
+	function makeSocketConnection() {
+		socket = io.connect(
+			'http://localhost:4000' || 
+			'https://viridian-marked-fork.glitch.me'  );
+	}
+
+	function actionLoadRequest() {
+		socket.on(`load req recd`, (JSONLoadData) => {
+			console.log(JSONLoadData.message);
+
+			if (JSONLoadData.result) {
+				//NOTE: here there could be a warning, before loading old data from DB,
+				//      e.g. Are you sure? Any unsaved work will be lost
+				shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
+			   console.log(`reached load data results. shapes array length is: ${shapesLibrary.shapesArray.length}`); 
+			}
+			else {
+				// anything here if req'd
+			}
+		});
+	}
+
+	function addColourSliders() {
+		sliderUI = new SliderUI();
+
+		sliderUI.createFillSliders();
+		sliderUI.setFillSliderPositions(width-165, 220, 20);
+		sliderUI.setFillSliderStyles('100px');
+		
+		sliderUI.createStrokeSliders();
+		sliderUI.setStrokeSliderPositions(width-165, 350, 20);
+		sliderUI.setStrokeSliderStyles('100px');
+	}
 
 function draw() { 
 	clear();
 	drawBackground();
     drawUIOverlay();
-
 	sliderUI.updateValues();
 	
 	if (shapesLibrary.shapesArray.length > 0) {
@@ -80,22 +98,24 @@ function mousePressed() {
     }
 	if (mode === 'CREATE' ) {
 		if (nextAction === 'startPoint') {
-			new_shape_fill_colour = g.hslColor(
-										sliderUI.fill_hue/360,
-										sliderUI.fill_saturation/100, 
-										sliderUI.fill_value/100, 
-										sliderUI.fill_alpha/100);
+			newShapeFillHSLA = {
+				hue: 		sliderUI.fill_hue/360,
+				saturation: sliderUI.fill_saturation/100,
+				value: 		sliderUI.fill_value/100,
+				alpha:		sliderUI.fill_alpha/100 };
+			
+			newShapeStrokeHSLA = {
+				hue: 		sliderUI.stroke_hue/360,
+				saturation: sliderUI.stroke_saturation/100,
+				value: 		sliderUI.stroke_value/100,
+				alpha:		sliderUI.stroke_alpha/100 };
 
-			new_shape_stroke_colour = g.hslColor(
-										sliderUI.stroke_hue/360,
-										sliderUI.stroke_saturation/100, 
-										sliderUI.stroke_value/100, 
-										sliderUI.stroke_alpha/100);
+			newStyle = new GPathStyle(
+								newShapeFillHSLA,
+								newShapeStrokeHSLA,
+								sliderUI.stroke_width  );
 
-
-			newShape = new Shape(	new_shape_fill_colour, 
-									new_shape_stroke_colour,
-									sliderUI.stroke_width);	
+			newShape = new Shape(newStyle);
 
 			newShape.addNode(mouseX, mouseY, 'vertex', 'start');
 		}
@@ -109,7 +129,6 @@ function mousePressed() {
 			newShape.addNode (mouseX, mouseY, 'vertex', 'quad');
 		}
 		else if (nextAction === 'closeShape') {
-
 			cp = g.centerPoint(newShape.gPath);
 			
 			newShape.addNode ( cp.x, cp.y, 'centre', 'null');
@@ -122,7 +141,6 @@ function mousePressed() {
 			sliderUI.fill_saturation_slider.value(50);
 		}
 	}
-
 }
 
 function mouseDragged() {
@@ -222,7 +240,6 @@ function drawUIOverlay() {
 	
 	rect(width-120, 100, 45, 45); // Draw rectangle
 	noStroke();
-
 }
 
 function drawBackground() {
