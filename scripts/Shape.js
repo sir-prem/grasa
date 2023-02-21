@@ -41,7 +41,6 @@ class Shape {
     
 		if (nodeType === 'vertex') {
 			switch(vertexType) {
-
 				case 'start':
 					this.addStartPoint(newNode);     break;
 			
@@ -237,6 +236,7 @@ class Shape {
             activeNode.setStyleMouseClick();
             window.mouseState = new MouseState(mouseX,mouseY);
             this.printNodeData();
+			return true;
         }
         else { // mouse clicked in empty space
             return; // do nothing

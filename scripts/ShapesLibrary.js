@@ -2,6 +2,9 @@ class ShapesLibrary {
 
     constructor(JSONFromDB) {
         this.shapesArray = [];
+		this.linksArray = [];
+		this.indexShape1;
+		this.indexShape2;
         this.intersectionShapesArray = [];
 
         let JSONShapesArray, JSONShape, JSONShapeStyle, JSONNodesArray, 
@@ -86,7 +89,6 @@ class ShapesLibrary {
         }
     }
 
-
     add(shape) {
         this.shapesArray.push(shape);
     }
@@ -125,13 +127,55 @@ class ShapesLibrary {
 
     mousePress() {
         let shape;
+		let shapesLink;
+		let pressedActiveNode;
+		let intersectShapeFillHSLA, intersectShapeStrokeHSLA;
+		let intersectShapeStyle;
+
         for (let i = 0; i < this.shapesArray.length; i++) {
-
             shape = this.shapesArray[i];
+            pressedActiveNode = shape.mousePress(mouseX, mouseY);
+			if (mode === 'INTERSECT' && pressedActiveNode) {
+				switch(nextAction) {
+					case 'firstShape':
+						this.indexShape1 = i;
+						console.log(`--- 1 shape clicked so far...`);
+						console.log(`--- indexShape1 is: ${this.indexShape1}...`);
+						break;
+					case 'nextShape':
+						this.indexShape2 = i;
+						console.log(` ---- 2 shapes now clicked`);
+						console.log(`--- indexShape1 is: ${this.indexShape1}...`);
+						console.log(`--- indexShape2 is: ${this.indexShape2}...`);
 
-            shape.mousePress(mouseX, mouseY);
+						intersectShapeFillHSLA = {
+							hue: 		sliderUI.fill_hue/360,
+							saturation: sliderUI.fill_saturation/100,
+							value: 		sliderUI.fill_value/100,
+							alpha:		sliderUI.fill_alpha/100 };
+
+						intersectShapeStrokeHSLA = {
+							hue: 		sliderUI.stroke_hue/360,
+							saturation: sliderUI.stroke_saturation/100,
+							value: 		sliderUI.stroke_value/100,
+							alpha:		sliderUI.stroke_alpha/100 };
+
+						intersectShapeStyle = new GPathStyle(
+											intersectShapeFillHSLA,
+											intersectShapeStrokeHSLA,
+											sliderUI.stroke_width  );
+
+						shapesLink = new ShapesLink( this.indexShape1, this.indexShape2,
+														intersectShapeStyle );
+
+						this.linksArray.push(shapesLink);
+
+						// change mode back to SCULPT mode
+						mode = 'SCULPT';
+						break;
+				}
+			}
         }
-
     }
 
     mouseDrag() {
@@ -142,7 +186,6 @@ class ShapesLibrary {
 
             shape.mouseDrag(mouseX, mouseY);
         }
-
     }
 
     mouseRelease() {
@@ -153,12 +196,12 @@ class ShapesLibrary {
 
             shape.mouseRelease(mouseX, mouseY);
         }
-
     }
 
     draw() {
         let i, j, k;
-        let shape, intersectionShape;
+        let shape;
+		let shape1, shape2, path1, path2, intersectionGPath; 
 
         // draw shapes
         for (i = 0; i < this.shapesArray.length; i++) {
@@ -169,9 +212,18 @@ class ShapesLibrary {
         }
 
         // draw intersections
-        for (j = 0; j < this.intersectionShapesArray.length; j++) {
-            intersectionShape = this.intersectionShapesArray[j];
-            intersectionShape.draw(this.shapesArray);
+        for (j = 0; j < this.linksArray.length; j++) {
+			let shapesLink = this.linksArray[j];
+			let intersectionStyle = shapesLink.intersectionStyle;
+			let indexShape1 = shapesLink.indexShape1;
+			let indexShape2 = shapesLink.indexShape2;
+			let shape1 = this.shapesArray[indexShape1];
+			let shape2 = this.shapesArray[indexShape2];
+			let path1 = shape1.gPath;
+			let path2 = shape2.gPath;
+			let intersectionGPath = g.compound(path1, path2, 'intersection');
+			intersectionGPath = GPathStyle.set(intersectionGPath, intersectionStyle);
+			intersectionGPath.draw(drawingContext);
         }
 
         // draw shapes mark up (on top most layer)

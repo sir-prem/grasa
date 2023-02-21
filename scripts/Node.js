@@ -63,12 +63,11 @@ class Node {
                                         
         if (this.vertex.type === 'bezier' || 
 			this.vertex.type === 'quad') {
-
                 this.vertex.handle1.pointMarker.setColour(
                                         style );
         }
 
-        if (this.type === 'bezier') {
+        if (this.vertex.type === 'bezier') {
                 this.vertex.handle2.pointMarker.setColour(
                                         style );
         }

@@ -77,14 +77,14 @@ function draw() {
         shapesLibrary.draw();
     }
 	
-	else if (mode === 'CREATE' && typeof newShape !== 'undefined') {
+	if (mode === 'CREATE' && typeof newShape !== 'undefined') {
 		newShape.draw();
 		newShape.drawMarkUp();
 	}	
 }
 
 function mouseMoved() {
-    if (shapesLibrary.shapesArray.length > 0) {
+    if (mode === 'SCULPT' || mode === 'INTERSECT') {
         shapesLibrary.mouseOver();
     }
 
@@ -93,94 +93,101 @@ function mouseMoved() {
 }
 
 function mousePressed() {
-    if (shapesLibrary.shapesArray.length > 0) {
+    if (mode === 'SCULPT' || mode === 'INTERSECT') {
        shapesLibrary.mousePress();
     }
-	if (mode === 'CREATE' ) {
-		if (nextAction === 'startPoint') {
-			newShapeFillHSLA = {
-				hue: 		sliderUI.fill_hue/360,
-				saturation: sliderUI.fill_saturation/100,
-				value: 		sliderUI.fill_value/100,
-				alpha:		sliderUI.fill_alpha/100 };
-			
-			newShapeStrokeHSLA = {
-				hue: 		sliderUI.stroke_hue/360,
-				saturation: sliderUI.stroke_saturation/100,
-				value: 		sliderUI.stroke_value/100,
-				alpha:		sliderUI.stroke_alpha/100 };
+	else if (mode === 'CREATE' ) {
+		switch (nextAction) {
+			case 'startPoint':
+				newShapeFillHSLA = {
+					hue: 		sliderUI.fill_hue/360,
+					saturation: sliderUI.fill_saturation/100,
+					value: 		sliderUI.fill_value/100,
+					alpha:		sliderUI.fill_alpha/100 };
+				
+				newShapeStrokeHSLA = {
+					hue: 		sliderUI.stroke_hue/360,
+					saturation: sliderUI.stroke_saturation/100,
+					value: 		sliderUI.stroke_value/100,
+					alpha:		sliderUI.stroke_alpha/100 };
 
-			newStyle = new GPathStyle(
-								newShapeFillHSLA,
-								newShapeStrokeHSLA,
-								sliderUI.stroke_width  );
+				newStyle = new GPathStyle(
+									newShapeFillHSLA,
+									newShapeStrokeHSLA,
+									sliderUI.stroke_width  );
 
-			newShape = new Shape(newStyle);
+				newShape = new Shape(newStyle);
+				newShape.addNode(mouseX, mouseY, 'vertex', 'start');
+				break;
 
-			newShape.addNode(mouseX, mouseY, 'vertex', 'start');
-		}
-		else if (nextAction === 'addLine') {
-			newShape.addNode( mouseX, mouseY, 'vertex', 'line');
-		}
-		else if (nextAction === 'addBezier') {
-			newShape.addNode( mouseX, mouseY, 'vertex', 'bezier');
-		}
-		else if (nextAction === 'addQuad') {
-			newShape.addNode (mouseX, mouseY, 'vertex', 'quad');
-		}
-		else if (nextAction === 'closeShape') {
-			cp = g.centerPoint(newShape.gPath);
-			
-			newShape.addNode ( cp.x, cp.y, 'centre', 'null');
-			
-			newShape.closeGPath();
-			shapesLibrary.add(newShape);
+			case 'addLine':
+				newShape.addNode( mouseX, mouseY, 'vertex', 'line');  break;
 
-			mode = 'SCULPT';
-			sliderUI.fill_hue_slider.value(0);
-			sliderUI.fill_saturation_slider.value(50);
+			case 'addBezier':
+				newShape.addNode( mouseX, mouseY, 'vertex', 'bezier');  break;
+
+			case 'addQuad':
+				newShape.addNode (mouseX, mouseY, 'vertex', 'quad');   break;
+				
+			case 'closeShape':
+				cp = g.centerPoint(newShape.gPath);
+				
+				newShape.addNode ( cp.x, cp.y, 'centre', 'null');
+				
+				newShape.closeGPath();
+				shapesLibrary.add(newShape);
+
+				mode = 'SCULPT';
+				//sliderUI.fill_hue_slider.value(0);
+				//sliderUI.fill_saturation_slider.value(50);
+				break;
 		}
 	}
 }
 
 function mouseDragged() {
-    if (shapesLibrary.shapesArray.length > 0) {
+    if (mode === 'SCULPT' || mode === 'INTERSECT') {
        shapesLibrary.mouseDrag();
     }     
 }
 
 function mouseReleased() {
-    if (shapesLibrary.shapesArray.length > 0) {
+    if (mode === 'SCULPT' || mode === 'INTERSECT') {
        shapesLibrary.mouseRelease();
     }
 }
 
 function keyPressed() {
-    if (key === 'c') {
-        mode = 'CREATE';
-        nextAction = 'startPoint';
-    }
-    else if (key === 'l') {
-        mode = 'CREATE';
-        nextAction = 'addLine';
-    }
-	else if (key === 'b') {
-		mode = 'CREATE';
-		nextAction = 'addBezier';
+	switch (key) {
+		case 'c':	
+			mode = 'CREATE';
+			nextAction = 'startPoint';	break;
+		case 'i':
+			mode = 'INTERSECT';
+			nextAction = 'firstShape';	break;
+		case 's':
+			mode = 'SCULPT';
+			nextAction = 'sculptShape'; break;
 	}
-	else if (key === 'q') {
-		mode = 'CREATE';
-		nextAction = 'addQuad';
-	}	
-    else if (key === 'x') {
-        mode = 'CREATE';
-        nextAction = 'closeShape';
+
+	if (mode === 'CREATE') {
+		switch (key) {
+			case 'l':	nextAction = 'addLine';		break;
+			case 'b':	nextAction = 'addBezier';	break;
+			case 'q':	nextAction = 'addQuad';		break;
+			case 'x':	nextAction = 'closeShape';	break;
+		}
+	}
+    else if (mode === 'INTERSECT') {
+		switch (key) {
+			case 'f':	nextAction = 'firstShape';	break;
+			case 'n':	nextAction = 'nextShape';	break;
+			case 'a':	nextAction = 'applyIntersection'; break;
+		}
     }
-    
-    else if (key === 's') {
-        mode = 'SCULPT';
-        nextAction = 'sculptShape';
-    }
+	else if (mode === 'SCULPT') {
+		// do nothing for now
+	}
     else {
         mode = 'UNKNOWN';
         nextAction = 'unknown';
