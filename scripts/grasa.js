@@ -3,14 +3,15 @@ var load;
 var cp;
 var sliderUI;
 var newShape;
+var consoleUI = new ConsoleUI();
+var navUI;
 
 function setup() {
     frameRate(10);
 	colorMode(HSB, 100);
 	setUpCanvas();
     config = setupConfig();
-	setInitialModeAndAction();
-    shapesLibrary = new ShapesLibrary();
+	initVariables();
 	makeSocketConnection();
 	actionLoadRequest();
 	addColourSliders();
@@ -28,9 +29,11 @@ function setup() {
 		renderer.parent("grasa-div");
 	}
 
-	function setInitialModeAndAction() {
-		mode = 'SCULPT';
+	function initVariables() {
+		navUI = consoleUI.navUI; 
+		navUI.currentMode = 'SCULPT';
 		nextAction = 'sculpt shapeA';
+		shapesLibrary = new ShapesLibrary();
 	}
 
 	function makeSocketConnection() {
@@ -70,21 +73,22 @@ function setup() {
 function draw() { 
 	clear();
 	drawBackground();
-    drawUIOverlay();
+	NavUI.drawHeader(width, height, sliderUI, key, navUI.currentMode, nextAction); 
 	sliderUI.updateValues();
+	consoleUI.draw(width-420, height-200, 370, 180);
 	
 	if (shapesLibrary.shapesArray.length > 0) {
         shapesLibrary.draw();
     }
 	
-	if (mode === 'CREATE' && typeof newShape !== 'undefined') {
+	if (navUI.currentMode === 'CREATE newShape' && typeof newShape !== 'undefined') {
 		newShape.draw();
 		newShape.drawMarkUp();
 	}	
 }
 
 function mouseMoved() {
-    if (mode === 'SCULPT' || mode === 'INTERSECT') {
+    if (navUI.currentMode === 'SCULPT' || navUI.currentMode === 'INTERSECT') {
         shapesLibrary.mouseOver();
     }
 
@@ -93,11 +97,11 @@ function mouseMoved() {
 }
 
 function mousePressed() {
-    if (mode === 'SCULPT' || mode === 'INTERSECT') {
+    if (navUI.currentMode === 'SCULPT' || navUI.currentMode === 'INTERSECT') {
        shapesLibrary.mousePress();
     }
-	else if (mode === 'CREATE' ) {
-		switch (nextAction) {
+	else if (navUI.currentMode === 'CREATE newShape' ) {
+		switch (navUI.nextAction) {
 			case 'startPoint':
 				newShapeFillHSLA = {
 					hue: 		sliderUI.fill_hue/360,
@@ -137,7 +141,8 @@ function mousePressed() {
 				newShape.closeGPath();
 				shapesLibrary.add(newShape);
 
-				mode = 'SCULPT';
+				navUI.currentMode = 'SCULPT';
+				navUI.nextAction = 'unknown';
 				//sliderUI.fill_hue_slider.value(0);
 				//sliderUI.fill_saturation_slider.value(50);
 				break;
@@ -146,107 +151,19 @@ function mousePressed() {
 }
 
 function mouseDragged() {
-    if (mode === 'SCULPT' || mode === 'INTERSECT') {
+    if (navUI.currentMode === 'SCULPT' || navUI.currentMode === 'INTERSECT') {
        shapesLibrary.mouseDrag();
     }     
 }
 
 function mouseReleased() {
-    if (mode === 'SCULPT' || mode === 'INTERSECT') {
+    if (navUI.currentMode === 'SCULPT' || navUI.currentMode === 'INTERSECT') {
        shapesLibrary.mouseRelease();
     }
 }
 
 function keyPressed() {
-	switch (key) {
-		case 'c':	
-			mode = 'CREATE';
-			nextAction = 'startPoint';	break;
-		case 'i':
-			mode = 'INTERSECT';
-			nextAction = 'firstShape';	break;
-		case 's':
-			mode = 'SCULPT';
-			nextAction = 'sculptShape'; break;
-	}
-
-	if (mode === 'CREATE') {
-		switch (key) {
-			case 'l':	nextAction = 'addLine';		break;
-			case 'b':	nextAction = 'addBezier';	break;
-			case 'q':	nextAction = 'addQuad';		break;
-			case 'x':	nextAction = 'closeShape';	break;
-		}
-	}
-    else if (mode === 'INTERSECT') {
-		switch (key) {
-			case 'f':	nextAction = 'firstShape';	break;
-			case 'n':	nextAction = 'nextShape';	break;
-			case 'a':	nextAction = 'applyIntersection'; break;
-		}
-    }
-	else if (mode === 'SCULPT') {
-		// do nothing for now
-	}
-    else {
-        mode = 'UNKNOWN';
-        nextAction = 'unknown';
-    }
-}
-
-function drawUIOverlay() {
-    //draw mouse co-ords
-    fill('indianred');
-    textSize(14);
-    text(`(${Math.trunc(mouseX)},${Math.trunc(mouseY)})`, mouseX+10, mouseY+20);
-    
-    // draw header/logo
-    fill('ivory');
-    textSize(18);
-    text(`GRASA v1.0`, width-250, 30);
-    textSize(10);
-    text(`An abstract shape`, width-250, 45);
-    text(`ideation tool`, width-250, 55);
-
-    // draw mode and next action
-    //fill('lightseagreen');
-    textSize(11);
-    text(`${key} - ${mode} mode`, width-250, height-50);
-    text(`next action: ${nextAction}`, width-250, height-30);
-
-	text(`FILL`, width-250, 165);
-	text(`Hue`, width-250, 185);
-	text(`Saturation`, width-250, 205);
-	text(`Lightness`, width-250, 225);
-	text(`Opacity`, width-250, 245);
-	
-	text(`STROKE`, width-250, 295);
-	text(`Hue`, width-250, 315);
-	text(`Saturation`, width-250, 335);
-	text(`Lightness`, width-250, 355);
-	text(`Opacity`, width-250, 375);
-	text('Width', width-250, 395);
-
-	fill_alpha_decimal = sliderUI.fill_alpha/100;
-
-	fill_colour = color(`hsla(${sliderUI.fill_hue}, 
-				${sliderUI.fill_saturation}%, 
-				${sliderUI.fill_value}%, 
-				${fill_alpha_decimal})`);
-
-	stroke_alpha_decimal = sliderUI.stroke_alpha/100;
-
-	stroke_colour = color(`hsla(${sliderUI.stroke_hue}, 
-				${sliderUI.stroke_saturation}%, 
-				${sliderUI.stroke_value}%, 
-				${stroke_alpha_decimal})`);
-
-	fill(fill_colour);
-	stroke(stroke_colour);
-	strokeWeight(sliderUI.stroke_width);
-	
-	rect(width-120, 100, 45, 45); // Draw rectangle
-	noStroke();
+	navUI.processKeyPress(key);
 }
 
 function drawBackground() {

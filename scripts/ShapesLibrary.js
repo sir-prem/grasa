@@ -5,19 +5,18 @@ class ShapesLibrary {
 		this.linksArray = [];
 		this.indexShape1;
 		this.indexShape2;
-        this.intersectionShapesArray = [];
 
         let JSONShapesArray, JSONShape, JSONShapeStyle, JSONNodesArray, 
 				JSONNode, JSONHandle1, JSONHandle2, nodeType, vertexType;
         let node, shape, vertex, vertexX, vertexY, handle1, handle2,
 				centrePoint;
-        let i, j;
+		let JSONLinksArray, JSONShapesLink, JSONIndexShape1, JSONIndexShape2,
+				JSONIntersectionStyle, shapesLink;
+        let i, j, k;
 
         if (arguments.length < 1) {
             return;
-            
         }
-
         else {
             // reconstruct ShapesArray from DB
 			JSONShapesArray = JSONFromDB.shapesArray;
@@ -66,35 +65,26 @@ class ShapesLibrary {
                 this.shapesArray.push(shape);
             }
 
-            // reconstruct intersectionShapesArray
-            let intersectionShape;
-            let JSONIntersectionShapesArray = JSONFromDB.intersectionShapesArray;
-            let k, JSONIntersectionShape;
+			// reconstruct linksArray
+			JSONLinksArray = JSONFromDB.linksArray;
+			for (k = 0; k < JSONLinksArray.length ; k++) {
 
-            for (k = 0; k < JSONIntersectionShapesArray.length; k++) {
-                JSONIntersectionShape = JSONIntersectionShapesArray[k];
+                JSONShapesLink = JSONLinksArray[k];
+				JSONIndexShape1 = JSONShapesLink.indexShape1;
+				JSONIndexShape2 = JSONShapesLink.indexShape2;
+				JSONIntersectionStyle = JSONShapesLink.intersectionStyle;
 
-                intersectionShape = new IntersectionShape(
-                                JSONIntersectionShape.shapeA_index,
-                                JSONIntersectionShape.shapeB_index,
-                                JSONIntersectionShape.fill,
-                                JSONIntersectionShape.stroke,
-                                JSONIntersectionShape.strokeWidth
-                );
-                
-                this.intersectionShapesArray.push(intersectionShape);
-
-            }
-
+				shapesLink = new ShapesLink(
+										JSONIndexShape1,
+										JSONIndexShape2,
+										JSONIntersectionStyle );
+				this.linksArray.push(shapesLink);
+			}
         }
     }
 
     add(shape) {
         this.shapesArray.push(shape);
-    }
-
-    addIntersection(intersectionShape) {
-        this.intersectionShapesArray.push(intersectionShape);
     }
 
     mouseOver() {
@@ -135,8 +125,8 @@ class ShapesLibrary {
         for (let i = 0; i < this.shapesArray.length; i++) {
             shape = this.shapesArray[i];
             pressedActiveNode = shape.mousePress(mouseX, mouseY);
-			if (mode === 'INTERSECT' && pressedActiveNode) {
-				switch(nextAction) {
+			if (navUI.currentMode === 'INTERSECT' && pressedActiveNode) {
+				switch(navUI.nextAction) {
 					case 'firstShape':
 						this.indexShape1 = i;
 						console.log(`--- 1 shape clicked so far...`);
@@ -171,7 +161,7 @@ class ShapesLibrary {
 						this.linksArray.push(shapesLink);
 
 						// change mode back to SCULPT mode
-						mode = 'SCULPT';
+						navUI.currentMode = 'SCULPT';
 						break;
 				}
 			}
