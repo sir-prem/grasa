@@ -50,7 +50,8 @@ function setup() {
 				//NOTE: here there could be a warning, before loading old data from DB,
 				//      e.g. Are you sure? Any unsaved work will be lost
 				shapesLibrary = new ShapesLibrary(JSONLoadData.shapesLibraryFromDB);
-			   console.log(`reached load data results. shapes array length is: ${shapesLibrary.shapesArray.length}`); 
+			   console.log(`reached load data results.`);
+				console.log(`shapes array length is: ${shapesLibrary.shapesArray.length}`); 
 			}
 			else {
 				// anything here if req'd
@@ -80,11 +81,11 @@ function draw() {
 	if (shapesLibrary.shapesArray.length > 0) {
         shapesLibrary.draw();
     }
-	
 	if (navUI.currentMode === 'CREATE newShape' && typeof newShape !== 'undefined') {
 		newShape.draw();
 		newShape.drawMarkUp();
-	}	
+	}
+	g.ellipse({x: 0, y: 0}, 100, 100).draw(drawingContext);
 }
 
 function mouseMoved() {
@@ -135,7 +136,6 @@ function mousePressed() {
 				
 			case 'closeShape':
 				cp = g.centerPoint(newShape.gPath);
-				
 				newShape.addNode ( cp.x, cp.y, 'centre', 'null');
 				
 				newShape.closeGPath();

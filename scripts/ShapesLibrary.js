@@ -190,15 +190,18 @@ class ShapesLibrary {
 
     draw() {
         let i, j, k;
-        let shape;
+        let shape, shape3, shape4;
 		let shape1, shape2, path1, path2, intersectionGPath; 
+
+		var gpath3, gpath4, subtr;
 
         // draw shapes
         for (i = 0; i < this.shapesArray.length; i++) {
             shape = this.shapesArray[i];
             shape.recreateGPath();
-            shape.draw();
-            //shape.drawMarkUp();
+            if (i == 0 || i == 1) {
+				shape.draw();
+			}
         }
 
         // draw intersections
@@ -219,8 +222,19 @@ class ShapesLibrary {
         // draw shapes mark up (on top most layer)
         for (k = 0; k < this.shapesArray.length; k++) {
             shape = this.shapesArray[k];
-            shape.drawMarkUp();
+			if (k == 0 || k == 1) {
+            	shape.drawMarkUp();
+			}
         }
+		shape3 = this.shapesArray[2];
+		shape4 = this.shapesArray[3];
+		gpath3 = shape3.gPath;
+		gpath4 = shape4.gPath;
+		subtr = g.compound( gpath3, gpath4, 'difference');
+		subtr = g.colorize(subtr, 'indigo', 'orange', 5);
+		subtr.draw(drawingContext);
+		shape3.drawMarkUp();
+		shape4.drawMarkUp();
     }
 
 }

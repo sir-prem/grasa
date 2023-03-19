@@ -1,13 +1,10 @@
 class ShapeState {
 
     constructor() {
-
         this.activeNodeIndex = -1; // -1 means no nodes are active
         this.isClosed = false;
         this.mouseState = new MouseState();
         this.mouseInsideHowManyPointMarkers = 0;
-
-
     }
 
     setWhichNodeActive(index) {
